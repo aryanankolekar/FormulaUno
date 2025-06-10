@@ -3,14 +3,6 @@ import react from '@vitejs/plugin-react'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  server: {
-    proxy: {
-      '/api': {
-        target: 'http://localhost:5000', // Your Flask backend URL
-        changeOrigin: true,
-        // rewrite: (path) => path.replace(/^\/api/, '') // Not needed as Flask routes include /api
-      }
-    }
-  }
+  plugins: [react()]
+  // server.proxy configuration removed as frontend now calls OpenF1 API directly
 })
