@@ -39,20 +39,20 @@ function RaceResults({ selectedRace }) {
       axios.get(`${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&lap_duration>0`),
       axios.get(`${OPENF1_BASE_URL}/weather?session_key=${selectedRace.session_key}`),
       axios.get(`${OPENF1_BASE_URL}/stints?session_key=${selectedRace.session_key}`),
-      axios.get(`${OPENF1_BASE_URL}/intervals?session_key=${selectedRace.session_key}`)
+      // Removed axios.get for /intervals
     ])
-    .then(([positionResponse, driversResponse, lapsResponse, weatherResponse, stintsResponse, intervalsResponse]) => {
+    .then(([positionResponse, driversResponse, lapsResponse, weatherResponse, stintsResponse]) => { // Removed intervalsResponse
       const positionsData = positionResponse.data;
       const driversData = driversResponse.data;
       const lapsData = lapsResponse.data;
       const weatherData = weatherResponse.data;
       const stintsData = stintsResponse.data;
-      const intervalsData = intervalsResponse.data;
+      // Removed intervalsData
 
       if (!Array.isArray(positionsData) || !Array.isArray(driversData) || !Array.isArray(lapsData) ||
-          !Array.isArray(weatherData) || !Array.isArray(stintsData) || !Array.isArray(intervalsData)) {
+          !Array.isArray(weatherData) || !Array.isArray(stintsData) ) { // Removed check for intervalsData
         console.error("Unexpected data format from OpenF1 API for one or more results components.",
-          {positionsData, driversData, lapsData, weatherData, stintsData, intervalsData}
+          {positionsData, driversData, lapsData, weatherData, stintsData} // Removed intervalsData from log
         );
         setError('Failed to parse some race results data components from OpenF1.');
         setIsLoading(false);
@@ -60,9 +60,10 @@ function RaceResults({ selectedRace }) {
       }
 
       const driversMap = new Map();
-      // Ensure team_colour is captured; it might be hex without '#'
-      driversData.forEach(d => driversMap.set(d.driver_number, { ...d, team_colour: d.team_colour ? `#${d.team_colour}` : '#808080' }));
-
+      driversData.forEach(d => driversMap.set(d.driver_number, {
+        ...d,
+        team_colour: d.team_colour ? `#${d.team_colour}` : '#808080'
+      }));
 
       const finalPositions = new Map();
       const latestPositionsByDriver = new Map();
@@ -76,12 +77,12 @@ function RaceResults({ selectedRace }) {
         finalPositions.set(p.driver_number, p.position);
       });
 
-      const lapsByDriver = new Map();
+      const driverLapInfoMap = new Map(); // Renamed from lapsByDriver for clarity
       let overallFastestLap = { duration: Infinity, driver_number: null, lap_number: null };
       lapsData.forEach(lap => {
-        const currentMaxLapNumber = lapsByDriver.get(lap.driver_number) || 0;
+        const currentMaxLapNumber = driverLapInfoMap.get(lap.driver_number) || 0;
         if (lap.lap_number > currentMaxLapNumber) {
-          lapsByDriver.set(lap.driver_number, lap.lap_number);
+          driverLapInfoMap.set(lap.driver_number, lap.lap_number); // Storing laps completed
         }
         if (lap.lap_duration && lap.lap_duration < overallFastestLap.duration) {
           overallFastestLap = {
@@ -99,7 +100,7 @@ function RaceResults({ selectedRace }) {
           driverName: driver.full_name || `Driver ${overallFastestLap.driver_number}`,
           time: overallFastestLap.duration.toFixed(3) + 's',
           lap: overallFastestLap.lap_number,
-          driver_number: overallFastestLap.driver_number // Add driver_number for styling
+          driver_number: overallFastestLap.driver_number
         };
       }
       setFastestLapInfo(flInfo);
@@ -126,7 +127,6 @@ function RaceResults({ selectedRace }) {
           stintsByDriver.set(stint.driver_number, { compounds: [], stopCount: 0 });
         }
         const driverStints = stintsByDriver.get(stint.driver_number);
-        // Ensure compound is a string before calling charAt
         driverStints.compounds.push(typeof stint.compound === 'string' ? stint.compound.charAt(0) : '?');
       });
        stintsByDriver.forEach((data, driverNumber) => {
@@ -134,41 +134,49 @@ function RaceResults({ selectedRace }) {
         data.stopCount = Math.max(0, driverStints.length - 1);
       });
 
-      const finalIntervalsMap = new Map();
-      if (intervalsData) {
-        intervalsData.forEach(interval => {
-            const driverMaxLap = lapsByDriver.get(interval.driver_number) || 0;
-            if (interval.lap_number === driverMaxLap) {
-                let displayInterval = '';
-                if (interval.gap_to_leader !== null && typeof interval.gap_to_leader !== 'undefined') {
-                    displayInterval = `+${interval.gap_to_leader.toFixed(3)}s`;
-                } else if (interval.interval_to_position_ahead !== null && typeof interval.interval_to_position_ahead !== 'undefined') {
-                    displayInterval = `+${interval.interval_to_position_ahead.toFixed(3)} (to car ahead)`;
-                }
-                finalIntervalsMap.set(interval.driver_number, displayInterval);
-            }
-        });
+      // Removed finalIntervalsMap and its processing logic
+
+      let winnerLapsCompleted = 0;
+      let winnerDriverNumber = null;
+      finalPositions.forEach((pos, driverNum) => {
+        if (pos === 1) {
+          winnerDriverNumber = driverNum;
+        }
+      });
+      if (winnerDriverNumber) {
+        winnerLapsCompleted = driverLapInfoMap.get(winnerDriverNumber) || 0;
       }
+
 
       const combinedResults = [];
       driversMap.forEach((driver, driverNumber) => {
         const stintInfo = stintsByDriver.get(driverNumber) || { compounds: [], stopCount: 0 };
-        const position = finalPositions.get(driverNumber);
-        let intervalString = finalIntervalsMap.get(driverNumber) || '';
-        if (position === 1) {
-            intervalString = 'Finished';
-        } else if (!intervalString && position && position !== 'N/C') {
-            const leaderLaps = lapsByDriver.get(driversData.find(d => finalPositions.get(d.driver_number) === 1)?.driver_number) || 0;
-            const driverLaps = lapsByDriver.get(driverNumber) || 0;
-            if (leaderLaps > 0 && driverLaps < leaderLaps && driverLaps > 0) { // Ensure driver has completed some laps
-                intervalString = `+${leaderLaps - driverLaps} Lap(s)`;
-            } else if (driverLaps === 0 && position !== 'N/C') { // If driver did not start or complete a lap but has a position
-                intervalString = 'DNS/DNF'; // Or more specific status if available
+        const currentDriverPosition = finalPositions.get(driverNumber); // Can be number or 'N/C'
+        const currentDriverLaps = driverLapInfoMap.get(driverNumber) || 0;
+
+        let intervalOrGap = "N/A";
+
+        if (currentDriverPosition === 1) {
+          intervalOrGap = "Finished";
+        } else if (typeof currentDriverPosition === 'number' && winnerLapsCompleted > 0) {
+          if (currentDriverLaps === winnerLapsCompleted) {
+            intervalOrGap = ""; // Same lap as winner, but not the winner
+          } else if (currentDriverLaps > 0 && currentDriverLaps < winnerLapsCompleted) {
+            const lapsDown = winnerLapsCompleted - currentDriverLaps;
+            intervalOrGap = `+${lapsDown} Lap${lapsDown > 1 ? 's' : ''}`;
+          } else {
+            if (currentDriverLaps === 0) {
+                intervalOrGap = "DNF";
+            } else {
+                intervalOrGap = "N/A"; // Anomaly or other specific scenario
             }
-        } else if (position === 'N/C' && (lapsByDriver.get(driverNumber) || 0) === 0) {
-             intervalString = 'DNS'; // Did Not Start
-        } else if (position === 'N/C') {
-             intervalString = 'DNF'; // Did Not Finish (generic)
+          }
+        } else if (currentDriverPosition === 'N/C') {
+          intervalOrGap = "DNF";
+        }
+
+        if (currentDriverLaps === 0 && currentDriverPosition !== 1 && typeof currentDriverPosition === 'number') {
+             intervalOrGap = "DNF";
         }
 
 
@@ -177,20 +185,26 @@ function RaceResults({ selectedRace }) {
           fullName: driver.full_name || `Driver ${driverNumber}`,
           countryCode: driver.country_code || '',
           teamName: driver.team_name || 'N/A',
-          teamColour: driver.team_colour || '#808080', // Default grey if no color
-          position: position || 'N/C',
-          lapsCompleted: lapsByDriver.get(driverNumber) || 0,
+          teamColour: driver.team_colour || '#808080',
+          position: currentDriverPosition || 'N/C',
+          lapsCompleted: currentDriverLaps,
           tyreStints: stintInfo.compounds.join('-'),
           stops: stintInfo.stopCount,
-          interval: intervalString,
-          headshot_url: driver.headshot_url // Add headshot_url
+          interval: intervalOrGap // Using the new intervalOrGap logic
         });
       });
 
       combinedResults.sort((a, b) => {
         if (a.position === 'N/C' && b.position !== 'N/C') return 1;
         if (b.position === 'N/C' && a.position !== 'N/C') return -1;
-        if (a.position === 'N/C' && b.position === 'N/C') return (b.lapsCompleted || 0) - (a.lapsCompleted || 0);
+        if (a.position === 'N/C' && b.position === 'N/C') {
+             // If both N/C, sort by laps completed descending
+            if ((b.lapsCompleted || 0) !== (a.lapsCompleted || 0) ) {
+                return (b.lapsCompleted || 0) - (a.lapsCompleted || 0);
+            }
+            // If laps are also same for N/C (e.g. both 0), maintain original order or use driver number as tie breaker
+            return a.driver_number - b.driver_number;
+        }
         return (a.position || Infinity) - (b.position || Infinity);
       });
 
@@ -231,7 +245,7 @@ function RaceResults({ selectedRace }) {
       <h2>Results for {raceName} ({selectedRace.year})</h2>
       <div className="race-meta-info">
         {circuitName && <p><strong>Circuit:</strong> {circuitName}</p>}
-        {raceDate && <p><strong>Date:</strong> {raceDate}</p>}
+        {raceDate && <p><strong>Date:</strong> {date}</p>}
         {raceWeather && (
           <p className="weather-info">
             <strong>Weather:</strong> Air {raceWeather.airTemp}°C, Track {raceWeather.trackTemp}°C,
@@ -261,11 +275,12 @@ function RaceResults({ selectedRace }) {
                   <td className="col-pos">{result.position}</td>
                   <td
                     className="col-driver driver-cell"
-                    style={{ '--team-color': result.teamColour }} // CSS variable for team color
+                    style={{ '--team-color': result.teamColour }}
                   >
-                    {result.headshot_url && <img src={result.headshot_url} alt={result.fullName} className="driver-headshot" />}
-                    <span className="driver-name">{result.fullName}</span>
-                    {result.countryCode && <span className="driver-country">({result.countryCode})</span>}
+                    <div className="driver-info">
+                      <span className="driver-name">{result.fullName}</span>
+                      {result.countryCode && <span className="driver-country">({result.countryCode})</span>}
+                    </div>
                   </td>
                   <td className="col-team">{result.teamName}</td>
                   <td className="col-laps">{result.lapsCompleted}</td>

@@ -27,7 +27,6 @@ ChartJS.register(
 
 const MAX_DRIVERS_ON_CHART = 7;
 
-// Helper function to format seconds into M:SS.mmm
 const formatLapTime = (seconds) => {
   if (seconds === null || typeof seconds === 'undefined') return 'N/A';
   const minutes = Math.floor(seconds / 60);
@@ -44,6 +43,7 @@ const PaceAnalysisChart = ({ selectedRace }) => {
   const [sessionLapsByDriver, setSessionLapsByDriver] = useState(new Map());
   const [driversToPlot, setDriversToPlot] = useState(new Set());
 
+  // Effect for fetching initial Laps and Drivers data for the session
   useEffect(() => {
     setChartData(null);
     setError('');
@@ -114,6 +114,7 @@ const PaceAnalysisChart = ({ selectedRace }) => {
 
   }, [selectedRace]);
 
+  // Effect for generating chartData when selected drivers or their lap data changes
   useEffect(() => {
     if (driversToPlot.size === 0 || sessionLapsByDriver.size === 0 || sessionDrivers.length === 0) {
       setChartData(null);
@@ -153,11 +154,11 @@ const PaceAnalysisChart = ({ selectedRace }) => {
         label: driverInfo.fullName,
         data: lapDataArray,
         borderColor: driverInfo.teamColour,
-        backgroundColor: `${driverInfo.teamColour}B3`, // Slightly more opaque for lines if filled
-        tension: 0.3, // Smoother curve
+        backgroundColor: `${driverInfo.teamColour}B3`,
+        tension: 0.3,
         pointRadius: 2,
-        pointHoverRadius: 6, // Larger hover radius
-        borderWidth: 2, // Thicker line
+        pointHoverRadius: 6,
+        borderWidth: 2,
         hitRadius: 10,
         fill: false,
       });
@@ -205,31 +206,40 @@ const PaceAnalysisChart = ({ selectedRace }) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top', labels: { color: 'var(--color-text-primary)', font: { size: 12 } } },
-      title: { display: true, text: `Lap Times Comparison - ${selectedRace.meeting_name || 'Selected Race'}`, color: 'var(--color-text-primary)', font: { size: 16, weight: 'bold' } },
+      legend: {
+        position: 'top',
+        labels: {
+          color: 'var(--color-text-primary)', // High-contrast legend text
+          font: { size: 12 }
+        }
+      },
+      title: {
+        display: true,
+        text: `Lap Times Comparison - ${selectedRace.meeting_name || 'Selected Race'}`,
+        color: 'var(--color-text-primary)', // High-contrast chart title
+        font: { size: 16, weight: 'bold' }
+      },
       tooltip: {
         mode: 'index',
         intersect: false,
+        backgroundColor: 'var(--color-bg-tertiary)', // Themed tooltip background
+        titleColor: 'var(--color-text-primary)',    // High-contrast tooltip title
+        bodyColor: 'var(--color-text-primary)',     // High-contrast tooltip body text
+        borderColor: 'var(--color-accent-red)',     // Accent border for tooltip
+        borderWidth: 1,
+        padding: 10,
         bodyFont: { size: 12 },
         titleFont: { size: 14, weight: 'bold' },
         callbacks: {
           title: function(tooltipItems) {
-            // tooltipItems is an array, use the first item for the label
-            if (tooltipItems.length > 0) {
-              return tooltipItems[0].label; // This is "Lap X"
-            }
+            if (tooltipItems.length > 0) return tooltipItems[0].label;
             return '';
           },
           label: function(context) {
             let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.parsed.y !== null) {
-              label += formatLapTime(context.parsed.y);
-            } else {
-              label += 'N/A';
-            }
+            if (label) label += ': ';
+            if (context.parsed.y !== null) label += formatLapTime(context.parsed.y);
+            else label += 'N/A';
             return label;
           }
         }
@@ -238,21 +248,40 @@ const PaceAnalysisChart = ({ selectedRace }) => {
     scales: {
       x: {
         display: true,
-        title: { display: true, text: 'Lap Number', color: 'var(--color-text-secondary)', font: { size: 12, weight: 'bold' } },
-        ticks: { color: 'var(--color-text-primary)', font: {size: 10} },
-        grid: { color: 'var(--color-border)', borderColor: 'var(--color-border)' }
+        title: {
+          display: true,
+          text: 'Lap Number',
+          color: 'var(--color-text-primary)', // High-contrast X-axis title
+          font: { size: 12, weight: 'bold' }
+        },
+        ticks: {
+          color: 'var(--color-text-primary)', // High-contrast X-axis ticks
+          font: {size: 10}
+        },
+        grid: {
+          color: 'var(--color-border)', // Subtle grid lines
+          borderColor: 'var(--color-border)'
+        }
       },
       y: {
         display: true,
-        title: { display: true, text: 'Lap Time', color: 'var(--color-text-secondary)', font: { size: 12, weight: 'bold' } },
+        title: {
+          display: true,
+          text: 'Lap Time',
+          color: 'var(--color-text-primary)', // High-contrast Y-axis title
+          font: { size: 12, weight: 'bold' }
+        },
         ticks: {
-          color: 'var(--color-text-primary)',
+          color: 'var(--color-text-primary)', // High-contrast Y-axis ticks
           font: {size: 10},
-          callback: function(value, index, values) {
-            return formatLapTime(value); // Format Y-axis ticks
+          callback: function(value) {
+            return formatLapTime(value);
           }
         },
-        grid: { color: 'var(--color-border)', borderColor: 'var(--color-border)' }
+        grid: {
+          color: 'var(--color-border)', // Subtle grid lines
+          borderColor: 'var(--color-border)'
+        }
       }
     },
     interaction: { intersect: false, mode: 'index' },
