@@ -1,15 +1,19 @@
 /* Global F1 Dark Theme Styles */
 
 :root {
-  --color-bg-primary: #181818; /* Very dark grey */
-  --color-bg-secondary: #282828; /* Slightly lighter dark grey for panels/cards */
-  --color-text-primary: #E0E0E0; /* Off-white */
-  --color-text-secondary: #A0A0A0; /* Medium grey for subtitles, less important text */
-  --color-accent-red: #E10600;    /* F1 Red */
-  --color-accent-hover-red: #B80500; /* Darker F1 Red for hover */
-  --color-border: #404040;       /* Dark grey for borders/dividers */
+  --color-bg-primary: #181818; /* Very dark grey, page background */
+  --color-bg-secondary: #282828; /* Slightly lighter, main app container background */
+  --color-bg-tertiary: #1F1F1F; /* For cards/panels within app container, slightly different from primary */
+  --color-text-primary: #E0E0E0;
+  --color-text-secondary: #A0A0A0;
+  --color-accent-red: #E10600;
+  --color-accent-hover-red: #B80500;
+  --color-accent-purple: #9B59B6;
+  --color-border: #404040;
   --color-table-header-bg: #202020;
-  --color-table-row-even-bg: #2c2c2c; /* Slightly different for table zebra striping */
+  --color-table-row-even-bg: #2c2c2c;
+  --color-table-row-hover-bg: #383838; /* Defined for table row hover */
+  --color-list-item-hover-bg: #252525; /* For ul li hover */
   --font-family-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
 }
 
@@ -30,37 +34,67 @@ body {
 
 #root {
   max-width: 1200px;
-  margin: 20px auto; /* Added top/bottom margin */
-  background-color: var(--color-bg-secondary); /* Main app area background */
+  margin: 20px auto;
+  background-color: var(--color-bg-secondary);
   padding: 20px;
   border-radius: 8px;
-  /* box-shadow: 0 0 15px rgba(0,0,0,0.5); Optional subtle shadow for dark theme */
 }
 
-h1, h2, h3, h4 {
-  margin-bottom: 0.75em;
-  color: var(--color-text-primary);
-  font-weight: 500; /* Medium weight for headings */
+.app-header {
+  padding: 1em 0;
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+  margin-bottom: 2em;
 }
 
-h1 { /* Main page title */
+.app-header h1 {
+  margin-bottom: 0;
+}
+
+h1 {
   text-align: center;
   margin-bottom: 1em;
-  color: var(--color-accent-red); /* F1 Red for main title */
-  font-weight: 700; /* Bold for main title */
+  color: var(--color-accent-red);
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  font-size: 2em;
 }
 
-h2 { /* Component titles like "Results for..." */
+h2 {
     color: var(--color-text-primary);
     border-bottom: 1px solid var(--color-border);
     padding-bottom: 0.3em;
+    margin-bottom: 0.75em;
+    font-size: 1.6em;
+    font-weight: 500;
 }
 
-h3 { /* Sub-section titles like "Races in..." */
+h3 {
     color: var(--color-text-secondary);
     font-weight: 500;
+    font-size: 1.3em;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+h4 {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    font-size: 1.1em;
+    margin-top: 1em;
+    margin-bottom: 0.5em;
+}
+
+.race-summary-section .race-results-container > h2,
+.pace-analysis-section > h4, /* General h4 within pace-analysis-section */
+.driver-selection-container > h4 /* Specific h4 for driver selection */ {
+    color: var(--color-accent-red);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-accent-red);
+    padding-bottom: 0.4em;
+    margin-bottom: 1em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 label {
@@ -70,13 +104,13 @@ label {
   color: var(--color-text-secondary);
 }
 
-select, input[type="text"] /* Add other input types if used */ {
+select, input[type="text"] {
   width: 100%;
   padding: 10px;
   margin-bottom: 1em;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: var(--color-bg-primary); /* Darker input background */
+  background-color: var(--color-bg-primary);
   color: var(--color-text-primary);
 }
 
@@ -89,18 +123,18 @@ select:disabled {
 select:focus, input:focus {
   outline: none;
   border-color: var(--color-accent-red);
-  box-shadow: 0 0 0 2px var(--color-accent-red); /* Focus ring */
+  box-shadow: 0 0 0 2px var(--color-accent-red);
 }
 
 button {
   background-color: var(--color-accent-red);
-  color: #fff; /* White text on red button */
+  color: #fff;
   border: none;
-  padding: 10px 18px; /* Slightly larger padding */
+  padding: 10px 18px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
-  font-size: 1em; /* Relative to body font size */
+  font-size: 1em;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease-in-out;
@@ -117,50 +151,121 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.back-button {
+  margin-bottom: 1.5em;
+  padding: 8px 15px;
+  background-color: var(--color-text-secondary);
+  color: var(--color-bg-primary);
+  font-weight: 500;
+}
+.back-button:hover {
+  background-color: var(--color-border);
+}
+
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: 2.5em 0;
+}
+
 hr {
   border: none;
   border-top: 1px solid var(--color-border);
-  margin: 2em 0;
+  margin: 1.5em 0;
 }
 
 ul {
   list-style-type: none;
 }
 
-ul li { /* Used for RaceList items */
-  background-color: var(--color-bg-primary); /* Darker list items to contrast with #root's bg-secondary */
+ul li {
+  background-color: var(--color-bg-tertiary);
   padding: 15px;
   margin-bottom: 10px;
   border-radius: 4px;
   border: 1px solid var(--color-border);
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
 }
 
-ul li strong { /* For RaceList item titles e.g., "Round X: Grand Prix Name" */
+ul li:hover {
+  background-color: var(--color-list-item-hover-bg);
+  border-color: var(--color-accent-red);
+}
+
+ul li strong {
   display: block;
   margin-bottom: 5px;
-  color: var(--color-accent-red); /* Use accent for these titles */
+  color: var(--color-accent-red);
   font-weight: 500;
 }
 
-ul li em { /* For RaceList item subtitles e.g., "Circuit - Date" */
+ul li em {
     font-size: 0.9em;
     color: var(--color-text-secondary);
 }
 
-table {
+ul li button {
+    margin-top: 8px;
+}
+
+.selectors-container {
+  margin-bottom: 2em;
+}
+
+.race-details-view {
+  margin-top: 1em;
+}
+
+.race-summary-section, .pace-analysis-section {
+  margin-bottom: 2em;
+  padding: 1.5em;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.race-results-container .race-meta-info {
+  margin-bottom: 1em;
+  padding-bottom: 1em;
+  border-bottom: 1px solid var(--color-border);
+}
+.race-results-container .race-meta-info p {
+  margin-bottom: 0.5em;
+  font-size: 0.95em;
+}
+.race-results-container .weather-info {
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  padding: 0.5em 0;
+}
+.race-results-container .weather-info > span {
+    margin-right: 15px;
+    display: inline-block;
+}
+
+.results-table {
   width: 100%;
   border-collapse: collapse;
   margin-top: 1.5em;
-  font-size: 0.95em;
+  font-size: 0.9em;
 }
 
-th, td {
+.results-table th, .results-table td {
   border: 1px solid var(--color-border);
-  padding: 12px 15px;
+  border-left: none;
+  border-right: none;
+  padding: 8px 10px;
   text-align: left;
+  vertical-align: middle;
+}
+.results-table th:first-child, .results-table td:first-child {
+    border-left: 1px solid var(--color-border);
+}
+.results-table th:last-child, .results-table td:last-child {
+    border-right: 1px solid var(--color-border);
 }
 
-th {
+.results-table th {
   background-color: var(--color-table-header-bg);
   color: var(--color-text-primary);
   font-weight: bold;
@@ -168,28 +273,124 @@ th {
   letter-spacing: 0.5px;
 }
 
-tbody tr:nth-child(even) {
+.results-table tbody tr:nth-child(even) {
   background-color: var(--color-table-row-even-bg);
 }
-tbody tr:hover {
-  background-color: #383838; /* Slightly lighter hover for dark theme rows */
+.results-table tbody tr:hover {
+  background-color: var(--color-table-row-hover-bg);
 }
 
-p {
-    margin-bottom: 0.5em;
+.results-table .col-pos { width: 5%; text-align: center; font-weight: bold; }
+.results-table .col-driver { width: 30%; }
+.results-table .col-team { width: 25%; }
+.results-table .col-laps, .results-table .col-stops { width: 8%; text-align: center; }
+.results-table .col-tyres { width: 12%; text-align: center; font-weight: bold; }
+.results-table .col-interval { width: 12%; font-size: 0.9em; color: var(--color-text-secondary); }
+
+.driver-cell {
+  display: flex;
+  align-items: center;
+  border-left: 5px solid var(--team-color, var(--color-border));
+  padding-left: 10px !important;
 }
 
-/* Error messages (styled based on existing inline style) */
-p[style*="color: red"] {
-    background-color: rgba(225, 6, 0, 0.1); /* F1 red with alpha for background */
-    padding: 10px;
+.driver-headshot {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  margin-right: 8px;
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.driver-name { font-weight: 500; }
+.driver-country { font-size: 0.85em; color: var(--color-text-secondary); margin-left: 5px; }
+.race-winner .col-pos, .race-winner .driver-name { color: var(--color-accent-red); font-weight: bold; }
+
+.fastest-lap {
+  margin-top: 1.5em;
+  padding: 10px;
+  background-color: rgba(155, 89, 182, 0.1);
+  border: 1px solid var(--color-accent-purple);
+  border-left-width: 5px;
+  border-radius: 4px;
+  color: var(--color-accent-purple);
+  font-weight: 500;
+}
+.fastest-lap strong { color: var(--color-accent-purple); }
+
+.initial-prompt, p.results-placeholder, p.loading-message {
+    text-align: center;
+    padding: 3em 1em;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary);
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+p.error-message, p[style*="color: red"] {
+    background-color: rgba(225, 6, 0, 0.15);
+    padding: 1em;
+    margin: 1em 0;
     border-radius: 4px;
     border: 1px solid var(--color-accent-red);
-    color: var(--color-accent-red) !important; /* Ensure the text is red */
+    border-left-width: 5px;
+    color: var(--color-accent-red) !important;
     font-weight: 500;
 }
 
-/* Basic link styling (if any links are added later) */
+/* Driver Selection for Pace Chart */
+.driver-selection-container {
+  margin-bottom: 1.5em;
+  padding: 1em;
+  background-color: var(--color-bg-primary); /* Slightly different bg for this control panel */
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.driver-selection-container h4 {
+  /* Already styled by .pace-analysis-section > h4 if it's a child,
+     but can add specific margin if needed here */
+  margin-top: 0; /* Reset top margin if it's the first element */
+  margin-bottom: 0.8em;
+  font-size: 1.1em; /* Match general h4 */
+}
+
+.driver-checkbox-label {
+  display: inline-flex; /* Changed to inline-flex for better layout */
+  align-items: center;
+  margin-right: 15px;
+  margin-bottom: 8px; /* Spacing for multiple lines */
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid transparent; /* For smooth hover/checked border */
+}
+
+.driver-checkbox-label:hover {
+  background-color: var(--color-bg-secondary);
+}
+
+.driver-checkbox-label input[type="checkbox"] {
+  margin-right: 8px;
+  width: auto; /* Override global input width */
+  accent-color: var(--color-accent-red); /* Style the checkbox itself */
+}
+.driver-checkbox-label input[type="checkbox"]:disabled + span {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+
+/* Styling for selected driver checkbox label */
+.driver-checkbox-label input[type="checkbox"]:checked + span {
+  /* font-weight: bold; /* Already applied via inline style in component */
+  /* color: var(--color-accent-red); /* Team color is applied inline */
+}
+
+
 a {
   color: var(--color-accent-red);
   text-decoration: none;

@@ -39,7 +39,7 @@ function RaceResults({ selectedRace }) {
       axios.get(`${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&lap_duration>0`),
       axios.get(`${OPENF1_BASE_URL}/weather?session_key=${selectedRace.session_key}`),
       axios.get(`${OPENF1_BASE_URL}/stints?session_key=${selectedRace.session_key}`),
-      axios.get(`${OPENF1_BASE_URL}/intervals?session_key=${selectedRace.session_key}`) // Added intervals call
+      axios.get(`${OPENF1_BASE_URL}/intervals?session_key=${selectedRace.session_key}`)
     ])
     .then(([positionResponse, driversResponse, lapsResponse, weatherResponse, stintsResponse, intervalsResponse]) => {
       const positionsData = positionResponse.data;
@@ -47,7 +47,7 @@ function RaceResults({ selectedRace }) {
       const lapsData = lapsResponse.data;
       const weatherData = weatherResponse.data;
       const stintsData = stintsResponse.data;
-      const intervalsData = intervalsResponse.data; // New data
+      const intervalsData = intervalsResponse.data;
 
       if (!Array.isArray(positionsData) || !Array.isArray(driversData) || !Array.isArray(lapsData) ||
           !Array.isArray(weatherData) || !Array.isArray(stintsData) || !Array.isArray(intervalsData)) {
@@ -60,7 +60,9 @@ function RaceResults({ selectedRace }) {
       }
 
       const driversMap = new Map();
-      driversData.forEach(d => driversMap.set(d.driver_number, d));
+      // Ensure team_colour is captured; it might be hex without '#'
+      driversData.forEach(d => driversMap.set(d.driver_number, { ...d, team_colour: d.team_colour ? `#${d.team_colour}` : '#808080' }));
+
 
       const finalPositions = new Map();
       const latestPositionsByDriver = new Map();
@@ -74,7 +76,7 @@ function RaceResults({ selectedRace }) {
         finalPositions.set(p.driver_number, p.position);
       });
 
-      const lapsByDriver = new Map(); // Stores max lap_number completed
+      const lapsByDriver = new Map();
       let overallFastestLap = { duration: Infinity, driver_number: null, lap_number: null };
       lapsData.forEach(lap => {
         const currentMaxLapNumber = lapsByDriver.get(lap.driver_number) || 0;
@@ -96,7 +98,8 @@ function RaceResults({ selectedRace }) {
         flInfo = {
           driverName: driver.full_name || `Driver ${overallFastestLap.driver_number}`,
           time: overallFastestLap.duration.toFixed(3) + 's',
-          lap: overallFastestLap.lap_number
+          lap: overallFastestLap.lap_number,
+          driver_number: overallFastestLap.driver_number // Add driver_number for styling
         };
       }
       setFastestLapInfo(flInfo);
@@ -104,8 +107,7 @@ function RaceResults({ selectedRace }) {
       if (weatherData.length > 0 && selectedRace.date_start) {
         const raceStartTime = new Date(selectedRace.date_start).getTime();
         let closestWeather = weatherData[0];
-        // ... (weather processing logic - unchanged)
-        for (const weatherEntry of weatherData) { // More robust iteration
+        for (const weatherEntry of weatherData) {
             if (Math.abs(new Date(weatherEntry.date).getTime() - raceStartTime) < Math.abs(new Date(closestWeather.date).getTime() - raceStartTime)) {
                 closestWeather = weatherEntry;
             }
@@ -124,26 +126,23 @@ function RaceResults({ selectedRace }) {
           stintsByDriver.set(stint.driver_number, { compounds: [], stopCount: 0 });
         }
         const driverStints = stintsByDriver.get(stint.driver_number);
-        driverStints.compounds.push(stint.compound.charAt(0));
+        // Ensure compound is a string before calling charAt
+        driverStints.compounds.push(typeof stint.compound === 'string' ? stint.compound.charAt(0) : '?');
       });
        stintsByDriver.forEach((data, driverNumber) => {
         const driverStints = stintsData.filter(s => s.driver_number === driverNumber);
         data.stopCount = Math.max(0, driverStints.length - 1);
       });
 
-      // Process Interval Data
       const finalIntervalsMap = new Map();
-      if (intervalsData) { // Check if intervalsData is not null/undefined
+      if (intervalsData) {
         intervalsData.forEach(interval => {
             const driverMaxLap = lapsByDriver.get(interval.driver_number) || 0;
-            // We want the interval at the driver's last completed lap
             if (interval.lap_number === driverMaxLap) {
-                // Prefer gap_to_leader, fallback to interval_to_position_ahead
                 let displayInterval = '';
                 if (interval.gap_to_leader !== null && typeof interval.gap_to_leader !== 'undefined') {
                     displayInterval = `+${interval.gap_to_leader.toFixed(3)}s`;
                 } else if (interval.interval_to_position_ahead !== null && typeof interval.interval_to_position_ahead !== 'undefined') {
-                    // This is interval to car ahead, so might need context or be less useful for overall results
                     displayInterval = `+${interval.interval_to_position_ahead.toFixed(3)} (to car ahead)`;
                 }
                 finalIntervalsMap.set(interval.driver_number, displayInterval);
@@ -151,21 +150,25 @@ function RaceResults({ selectedRace }) {
         });
       }
 
-
       const combinedResults = [];
       driversMap.forEach((driver, driverNumber) => {
         const stintInfo = stintsByDriver.get(driverNumber) || { compounds: [], stopCount: 0 };
         const position = finalPositions.get(driverNumber);
         let intervalString = finalIntervalsMap.get(driverNumber) || '';
         if (position === 1) {
-            intervalString = 'Finished'; // Leader finishes, no gap.
+            intervalString = 'Finished';
         } else if (!intervalString && position && position !== 'N/C') {
-            // If no specific interval found but driver finished, mark as Laps Down if not on lead lap
             const leaderLaps = lapsByDriver.get(driversData.find(d => finalPositions.get(d.driver_number) === 1)?.driver_number) || 0;
             const driverLaps = lapsByDriver.get(driverNumber) || 0;
-            if (leaderLaps > 0 && driverLaps < leaderLaps) {
+            if (leaderLaps > 0 && driverLaps < leaderLaps && driverLaps > 0) { // Ensure driver has completed some laps
                 intervalString = `+${leaderLaps - driverLaps} Lap(s)`;
+            } else if (driverLaps === 0 && position !== 'N/C') { // If driver did not start or complete a lap but has a position
+                intervalString = 'DNS/DNF'; // Or more specific status if available
             }
+        } else if (position === 'N/C' && (lapsByDriver.get(driverNumber) || 0) === 0) {
+             intervalString = 'DNS'; // Did Not Start
+        } else if (position === 'N/C') {
+             intervalString = 'DNF'; // Did Not Finish (generic)
         }
 
 
@@ -174,11 +177,13 @@ function RaceResults({ selectedRace }) {
           fullName: driver.full_name || `Driver ${driverNumber}`,
           countryCode: driver.country_code || '',
           teamName: driver.team_name || 'N/A',
+          teamColour: driver.team_colour || '#808080', // Default grey if no color
           position: position || 'N/C',
           lapsCompleted: lapsByDriver.get(driverNumber) || 0,
           tyreStints: stintInfo.compounds.join('-'),
           stops: stintInfo.stopCount,
-          interval: intervalString
+          interval: intervalString,
+          headshot_url: driver.headshot_url // Add headshot_url
         });
       });
 
@@ -210,64 +215,75 @@ function RaceResults({ selectedRace }) {
   }, [selectedRace]);
 
   if (!selectedRace || !selectedRace.session_key) {
-    return <p>Select a race from the list to see its results.</p>;
+    return <p className="results-placeholder">Select a race from the list to see its results.</p>;
   }
 
   if (isLoading) {
-    return <p>Loading results for {raceName}...</p>;
+    return <p className="loading-message">Loading results for {raceName}...</p>;
   }
 
   if (error) {
-    return <p style={{ color: 'red' }}>{error}</p>;
+    return <p className="error-message">{error}</p>;
   }
 
   return (
-    <div>
+    <div className="race-results-container">
       <h2>Results for {raceName} ({selectedRace.year})</h2>
-      {circuitName && <p><strong>Circuit:</strong> {circuitName}</p>}
-      {raceDate && <p><strong>Date:</strong> {raceDate}</p>}
-      {raceWeather && (
-        <p>
-          <strong>Weather:</strong> Air {raceWeather.airTemp}°C, Track {raceWeather.trackTemp}°C,
-          Humidity {raceWeather.humidity}%, {raceWeather.rainfall ? 'Wet Race' : 'Dry Race'}
-        </p>
-      )}
+      <div className="race-meta-info">
+        {circuitName && <p><strong>Circuit:</strong> {circuitName}</p>}
+        {raceDate && <p><strong>Date:</strong> {raceDate}</p>}
+        {raceWeather && (
+          <p className="weather-info">
+            <strong>Weather:</strong> Air {raceWeather.airTemp}°C, Track {raceWeather.trackTemp}°C,
+            Humidity {raceWeather.humidity}%, {raceWeather.rainfall ? 'Wet Race' : 'Dry Race'}
+          </p>
+        )}
+      </div>
 
       {displayResults.length > 0 ? (
         <>
           <h4>Standings:</h4>
-          <table border="1" style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <table className="results-table">
             <thead>
               <tr>
-                <th>Pos</th>
-                <th>Driver</th>
-                <th>Team</th>
-                <th>Laps</th>
-                <th>Stops</th>
-                <th>Tyres</th>
-                <th>Interval/Gap</th>
+                <th className="col-pos">Pos</th>
+                <th className="col-driver">Driver</th>
+                <th className="col-team">Team</th>
+                <th className="col-laps">Laps</th>
+                <th className="col-stops">Stops</th>
+                <th className="col-tyres">Tyres</th>
+                <th className="col-interval">Interval/Gap</th>
               </tr>
             </thead>
             <tbody>
               {displayResults.map((result) => (
-                <tr key={result.driver_number}>
-                  <td>{result.position}</td>
-                  <td>{result.fullName} {result.countryCode ? `(${result.countryCode})` : ''}</td>
-                  <td>{result.teamName}</td>
-                  <td>{result.lapsCompleted}</td>
-                  <td>{result.stops}</td>
-                  <td>{result.tyreStints}</td>
-                  <td>{result.interval}</td>
+                <tr key={result.driver_number} className={result.position === 1 ? 'race-winner' : ''}>
+                  <td className="col-pos">{result.position}</td>
+                  <td
+                    className="col-driver driver-cell"
+                    style={{ '--team-color': result.teamColour }} // CSS variable for team color
+                  >
+                    {result.headshot_url && <img src={result.headshot_url} alt={result.fullName} className="driver-headshot" />}
+                    <span className="driver-name">{result.fullName}</span>
+                    {result.countryCode && <span className="driver-country">({result.countryCode})</span>}
+                  </td>
+                  <td className="col-team">{result.teamName}</td>
+                  <td className="col-laps">{result.lapsCompleted}</td>
+                  <td className="col-stops">{result.stops}</td>
+                  <td className="col-tyres">{result.tyreStints}</td>
+                  <td className="col-interval">{result.interval}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </>
       ) : (
-         !isLoading && <p>No results data processed for {raceName}. The API might not have detailed standings or data is still processing.</p>
+         !isLoading && <p className="results-placeholder">No results data processed for {raceName}. The API might not have detailed standings or data is still processing.</p>
       )}
       {fastestLapInfo && (
-        <p><strong>Fastest Lap:</strong> {fastestLapInfo.time} by {fastestLapInfo.driverName} (Lap {fastestLapInfo.lap})</p>
+        <p className={`fastest-lap ${fastestLapInfo.driver_number ? 'driver-' + fastestLapInfo.driver_number : ''}`}>
+          <strong>Fastest Lap:</strong> {fastestLapInfo.time} by {fastestLapInfo.driverName} (Lap {fastestLapInfo.lap})
+        </p>
       )}
     </div>
   );
