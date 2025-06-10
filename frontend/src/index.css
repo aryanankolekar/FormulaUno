@@ -1,134 +1,200 @@
-/* Basic Reset / Normalize (very minimal) */
-body, h1, h2, h3, h4, p, ul, ol, table, select, button {
+/* Global F1 Dark Theme Styles */
+
+:root {
+  --color-bg-primary: #181818; /* Very dark grey */
+  --color-bg-secondary: #282828; /* Slightly lighter dark grey for panels/cards */
+  --color-text-primary: #E0E0E0; /* Off-white */
+  --color-text-secondary: #A0A0A0; /* Medium grey for subtitles, less important text */
+  --color-accent-red: #E10600;    /* F1 Red */
+  --color-accent-hover-red: #B80500; /* Darker F1 Red for hover */
+  --color-border: #404040;       /* Dark grey for borders/dividers */
+  --color-table-header-bg: #202020;
+  --color-table-row-even-bg: #2c2c2c; /* Slightly different for table zebra striping */
+  --font-family-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+/* Basic Reset / Normalize */
+body, h1, h2, h3, h4, p, ul, ol, table, select, button, input {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-family-main);
   line-height: 1.6;
-  color: #333;
-  background-color: #f4f4f4;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
   padding: 20px;
 }
 
 #root {
   max-width: 1200px;
-  margin: 0 auto;
-  background-color: #fff;
+  margin: 20px auto; /* Added top/bottom margin */
+  background-color: var(--color-bg-secondary); /* Main app area background */
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  /* box-shadow: 0 0 15px rgba(0,0,0,0.5); Optional subtle shadow for dark theme */
 }
 
 h1, h2, h3, h4 {
   margin-bottom: 0.75em;
-  color: #2c3e50;
+  color: var(--color-text-primary);
+  font-weight: 500; /* Medium weight for headings */
 }
 
-h1 {
+h1 { /* Main page title */
   text-align: center;
   margin-bottom: 1em;
+  color: var(--color-accent-red); /* F1 Red for main title */
+  font-weight: 700; /* Bold for main title */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+h2 { /* Component titles like "Results for..." */
+    color: var(--color-text-primary);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 0.3em;
+}
+
+h3 { /* Sub-section titles like "Races in..." */
+    color: var(--color-text-secondary);
+    font-weight: 500;
 }
 
 label {
   display: block;
   margin-bottom: 0.5em;
   font-weight: bold;
+  color: var(--color-text-secondary);
 }
 
-select {
+select, input[type="text"] /* Add other input types if used */ {
   width: 100%;
   padding: 10px;
   margin-bottom: 1em;
-  border: 1px solid #ccc;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  background-color: #fff;
+  background-color: var(--color-bg-primary); /* Darker input background */
+  color: var(--color-text-primary);
 }
 
 select:disabled {
-  background-color: #eee;
+  background-color: var(--color-border);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+select:focus, input:focus {
+  outline: none;
+  border-color: var(--color-accent-red);
+  box-shadow: 0 0 0 2px var(--color-accent-red); /* Focus ring */
+}
+
+button {
+  background-color: var(--color-accent-red);
+  color: #fff; /* White text on red button */
+  border: none;
+  padding: 10px 18px; /* Slightly larger padding */
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 1em; /* Relative to body font size */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+  font-weight: 500;
+}
+
+button:hover {
+  background-color: var(--color-accent-hover-red);
+}
+
+button:disabled {
+  background-color: var(--color-border);
+  color: var(--color-text-secondary);
+  cursor: not-allowed;
 }
 
 hr {
   border: none;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--color-border);
   margin: 2em 0;
 }
 
 ul {
   list-style-type: none;
-  padding-left: 0;
 }
 
-ul li {
-  background-color: #f9f9f9;
+ul li { /* Used for RaceList items */
+  background-color: var(--color-bg-primary); /* Darker list items to contrast with #root's bg-secondary */
   padding: 15px;
   margin-bottom: 10px;
   border-radius: 4px;
-  border: 1px solid #eee;
+  border: 1px solid var(--color-border);
 }
 
-ul li strong {
+ul li strong { /* For RaceList item titles e.g., "Round X: Grand Prix Name" */
   display: block;
   margin-bottom: 5px;
-  color: #3498db;
+  color: var(--color-accent-red); /* Use accent for these titles */
+  font-weight: 500;
 }
 
-ul li em {
+ul li em { /* For RaceList item subtitles e.g., "Circuit - Date" */
     font-size: 0.9em;
-    color: #555;
-}
-
-button {
-  background-color: #3498db;
-  color: white;
-  border: none;
-  padding: 8px 15px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 14px;
-  border-radius: 4px;
-  cursor: pointer;
-  margin-top: 5px;
-}
-
-button:hover {
-  background-color: #2980b9;
+    color: var(--color-text-secondary);
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1em;
+  margin-top: 1.5em;
+  font-size: 0.95em;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border: 1px solid var(--color-border);
+  padding: 12px 15px;
   text-align: left;
 }
 
 th {
-  background-color: #ecf0f1;
-  color: #2c3e50;
+  background-color: var(--color-table-header-bg);
+  color: var(--color-text-primary);
   font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 tbody tr:nth-child(even) {
-  background-color: #f9f9f9;
+  background-color: var(--color-table-row-even-bg);
+}
+tbody tr:hover {
+  background-color: #383838; /* Slightly lighter hover for dark theme rows */
 }
 
 p {
     margin-bottom: 0.5em;
 }
 
-/* Error messages */
-p[style*="color: red"] { /* Crude way to target existing error messages */
-    background-color: #ffebee;
+/* Error messages (styled based on existing inline style) */
+p[style*="color: red"] {
+    background-color: rgba(225, 6, 0, 0.1); /* F1 red with alpha for background */
     padding: 10px;
     border-radius: 4px;
-    border: 1px solid #e57373;
+    border: 1px solid var(--color-accent-red);
+    color: var(--color-accent-red) !important; /* Ensure the text is red */
+    font-weight: 500;
+}
+
+/* Basic link styling (if any links are added later) */
+a {
+  color: var(--color-accent-red);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
 }
