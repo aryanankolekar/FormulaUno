@@ -399,3 +399,109 @@ a {
 a:hover {
   text-decoration: underline;
 }
+
+/* Styles for DriverGapChart.jsx */
+.driver-gap-chart-container {
+  padding: 1em;
+  /* background-color: var(--color-bg-tertiary); */
+  /* border: 1px solid var(--color-border); */
+  /* border-radius: 6px; */
+  margin-top: 1.5em;
+}
+
+.driver-gap-chart-container h3 {
+  color: var(--color-text-primary);
+  margin-bottom: 0.75em;
+  text-align: center;
+}
+/* Placeholder styling for chart and messages within DriverGapChart */
+.chart-placeholder p,
+.driver-gap-chart-container .loading-message p, /* Specific to this container */
+.driver-gap-chart-container .error-message p, /* Specific to this container */
+.driver-gap-chart-container > .chart-placeholder /* Direct p children for messages, updated to target class */ {
+    text-align: center;
+    padding: 2em 1em;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary); /* Match other placeholders */
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    margin-top: 1em; /* Add some space if it's below other elements like selectors */
+}
+
+.driver-gap-chart-container .loading-message, /* Target the div wrapper */
+.driver-gap-chart-container .error-message {  /* Target the div wrapper */
+    text-align: center;
+    padding: 2em 1em;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary);
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    margin-top: 1em;
+}
+
+.driver-gap-chart-container .error-message { /* Target the div wrapper */
+    background-color: rgba(225, 6, 0, 0.1);
+    color: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+}
+.driver-gap-chart-container .error-message p { /* Reset p inside if needed */
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin:0;
+    color: var(--color-accent-red);
+}
+.driver-gap-chart-container .loading-message p { /* Reset p inside if needed */
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    margin:0;
+    color: var(--color-text-secondary);
+}
+
+
+/* Styling for the div that will actually hold the chart, if needed for sizing */
+.driver-gap-chart-area {
+  height: 350px; /* Example height */
+  width: 100%;
+  margin-top: 1em;
+}
+/* Ensure chart canvas is responsive */
+.driver-gap-chart-area canvas {
+    max-height: 100%;
+    max-width: 100%;
+}
+
+/* Driver Gap Selectors */
+.driver-gap-selectors {
+  display: flex;
+  justify-content: space-around; /* Or space-between */
+  align-items: flex-start;
+  gap: 1em; /* Space between the two selector blocks */
+  margin-bottom: 1.5em;
+  padding: 1em;
+  background-color: var(--color-bg-primary); /* Match other control panels */
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.driver-selector {
+  flex: 1; /* Each selector takes equal space */
+  display: flex;
+  flex-direction: column;
+}
+
+.driver-selector label {
+  margin-bottom: 0.5em;
+  font-weight: 500; /* Slightly less bold than main section titles */
+  color: var(--color-text-secondary);
+  font-size: 0.9em; /* Smaller label */
+}
+
+/* Ensure select elements within these containers use the full width */
+.driver-selector select {
+    width: 100%; /* Already default but good to be explicit */
+    margin-bottom: 0; /* Remove default bottom margin if label is above */
+}
