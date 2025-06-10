@@ -35,88 +35,110 @@ const formatLapTime = (seconds) => {
   return `${minutes}:${Math.floor(remainingSeconds).toString().padStart(2, '0')}.${millis.toString().padStart(3, '0')}`;
 };
 
-const PaceAnalysisChart = ({ selectedRace }) => {
+// Component now accepts allSessionDrivers as a prop
+const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
   const [chartData, setChartData] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingLaps, setIsLoadingLaps] = useState(false); // Specific loading for laps
   const [error, setError] = useState('');
-  const [sessionDrivers, setSessionDrivers] = useState([]);
+  // sessionDrivers state is now derived from allSessionDrivers prop
   const [sessionLapsByDriver, setSessionLapsByDriver] = useState(new Map());
   const [driversToPlot, setDriversToPlot] = useState(new Set());
+  const [processedDrivers, setProcessedDrivers] = useState([]); // To hold drivers formatted for UI
 
-  // Effect for fetching initial Laps and Drivers data for the session
+  // Effect for fetching Laps data and processing drivers from prop
   useEffect(() => {
     setChartData(null);
     setError('');
-    setIsLoading(false);
-    setSessionDrivers([]);
+    setIsLoadingLaps(false);
     setSessionLapsByDriver(new Map());
     setDriversToPlot(new Set());
+    setProcessedDrivers([]);
 
     if (!selectedRace || !selectedRace.session_key) {
       return;
     }
 
-    setIsLoading(true);
+    setIsLoadingLaps(true); // Start loading laps
 
-    Promise.all([
-      axios.get(`${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&lap_duration>0`),
-      axios.get(`${OPENF1_BASE_URL}/drivers?session_key=${selectedRace.session_key}`)
-    ])
-    .then(([lapsResponse, driversResponse]) => {
+    // Process allSessionDrivers prop
+    if (allSessionDrivers && allSessionDrivers.length > 0) {
+        const currentDriversMap = new Map();
+        allSessionDrivers.forEach(d => currentDriversMap.set(d.driver_number, {
+          fullName: d.full_name || `Driver ${d.driver_number}`,
+          name_acronym: d.name_acronym, // Store acronym
+          teamColour: d.team_colour ? `#${d.team_colour}` : '#808080',
+          driver_number: d.driver_number
+        }));
+        // This mapping is for UI selection, actual plotting depends on lap data availability
+        setProcessedDrivers(allSessionDrivers.map(d => currentDriversMap.get(d.driver_number)).filter(Boolean));
+    } else {
+        // No drivers passed, clear processed drivers
+        setProcessedDrivers([]);
+    }
+
+    // Fetch only laps now
+    axios.get(`${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&lap_duration>0`)
+    .then(lapsResponse => {
       const lapsData = lapsResponse.data;
-      const driversData = driversResponse.data;
 
-      if (!Array.isArray(lapsData) || !Array.isArray(driversData)) {
+      if (!Array.isArray(lapsData)) {
         setError('Failed to parse lap time data from OpenF1.');
-        setIsLoading(false);
+        setIsLoadingLaps(false);
         return;
       }
 
-      const currentDriversMap = new Map();
-      driversData.forEach(d => currentDriversMap.set(d.driver_number, {
-        fullName: d.full_name || `Driver ${d.driver_number}`,
-        teamColour: d.team_colour ? `#${d.team_colour}` : '#808080',
-        driver_number: d.driver_number
-      }));
-
       const currentLapsByDriver = new Map();
+      const driverNumbersWithLaps = new Set(); // Keep track of drivers who actually have laps
+
       lapsData.forEach(lap => {
-        if (!currentDriversMap.has(lap.driver_number)) return;
+        // We only care about laps from drivers passed in allSessionDrivers
+        if (allSessionDrivers && !allSessionDrivers.find(d => d.driver_number === lap.driver_number)) return;
+
         if (!currentLapsByDriver.has(lap.driver_number)) {
           currentLapsByDriver.set(lap.driver_number, []);
         }
         if (lap.lap_duration !== null && typeof lap.lap_duration === 'number') {
           currentLapsByDriver.get(lap.driver_number).push({ lap_number: lap.lap_number, lap_duration: lap.lap_duration });
+          driverNumbersWithLaps.add(lap.driver_number);
         }
       });
-
-      const sortedAvailableDrivers = [...currentLapsByDriver.keys()]
-        .filter(driverNumber => currentDriversMap.has(driverNumber))
-        .sort((a, b) => (currentLapsByDriver.get(b)?.length || 0) - (currentLapsByDriver.get(a)?.length || 0))
-        .map(driverNumber => currentDriversMap.get(driverNumber));
-
-      setSessionDrivers(sortedAvailableDrivers);
       setSessionLapsByDriver(currentLapsByDriver);
 
+      // Filter processedDrivers to only those who have lap data
+      // And sort them by number of laps completed for initial selection
+      const driversForUI = (allSessionDrivers || [])
+        .filter(d => driverNumbersWithLaps.has(d.driver_number))
+        .map(d => ({ // Re-map to ensure consistent structure if needed, or use from processedDrivers
+            fullName: d.full_name || `Driver ${d.driver_number}`,
+            name_acronym: d.name_acronym,
+            teamColour: d.team_colour ? `#${d.team_colour}` : '#808080',
+            driver_number: d.driver_number,
+            lapCount: (currentLapsByDriver.get(d.driver_number) || []).length
+        }))
+        .sort((a,b) => b.lapCount - a.lapCount);
+
+      setProcessedDrivers(driversForUI);
+
       const initialDriversToPlot = new Set();
-      for(let i = 0; i < Math.min(sortedAvailableDrivers.length, 2); i++) {
-        initialDriversToPlot.add(sortedAvailableDrivers[i].driver_number);
+      for(let i = 0; i < Math.min(driversForUI.length, 2); i++) {
+        initialDriversToPlot.add(driversForUI[i].driver_number);
       }
       setDriversToPlot(initialDriversToPlot);
 
-      setIsLoading(false);
+      setIsLoadingLaps(false);
     })
     .catch(err => {
-      console.error(`Error fetching pace data for session ${selectedRace.session_key}:`, err);
-      setError(`Failed to load initial pace data for ${selectedRace.meeting_name}.`);
-      setIsLoading(false);
+      console.error(`Error fetching lap data for session ${selectedRace.session_key}:`, err);
+      setError(`Failed to load lap data for ${selectedRace.meeting_name}.`);
+      setIsLoadingLaps(false);
     });
 
-  }, [selectedRace]);
+  }, [selectedRace, allSessionDrivers]); // Depend on allSessionDrivers
 
-  // Effect for generating chartData when selected drivers or their lap data changes
+  // Effect for generating chartData
   useEffect(() => {
-    if (driversToPlot.size === 0 || sessionLapsByDriver.size === 0 || sessionDrivers.length === 0) {
+    // Guard against running if processedDrivers isn't populated yet from the prop
+    if (driversToPlot.size === 0 || sessionLapsByDriver.size === 0 || processedDrivers.length === 0) {
       setChartData(null);
       return;
     }
@@ -128,19 +150,24 @@ const PaceAnalysisChart = ({ selectedRace }) => {
       if (currentMax > maxLaps) maxLaps = currentMax;
     });
 
-    if (maxLaps === 0) {
-      setError(driversToPlot.size > 0 ? "Selected drivers have no lap data." : "No laps to plot.");
+    if (maxLaps === 0 && driversToPlot.size > 0) {
+      setError("Selected drivers have no valid lap data to plot.");
       setChartData(null);
+      return;
+    } else if (maxLaps === 0) {
+      setChartData(null); // No data to plot, but not necessarily an error if no drivers selected
       return;
     }
     setError('');
+
 
     const labels = Array.from({ length: maxLaps }, (_, i) => `Lap ${i + 1}`);
     const datasets = [];
 
     driversToPlot.forEach(driverNumber => {
-      const driverInfo = sessionDrivers.find(d => d.driver_number === driverNumber);
-      if (!driverInfo) return;
+      // Find driver details from processedDrivers (which is derived from allSessionDrivers prop)
+      const driverInfo = processedDrivers.find(d => d.driver_number === driverNumber);
+      if (!driverInfo) return; // Should not happen if processedDrivers is correctly populated
 
       const driverLaps = sessionLapsByDriver.get(driverNumber) || [];
       const lapDataArray = new Array(maxLaps).fill(null);
@@ -151,10 +178,10 @@ const PaceAnalysisChart = ({ selectedRace }) => {
       });
 
       datasets.push({
-        label: driverInfo.fullName,
+        label: `${driverInfo.name_acronym || driverInfo.fullName}`, // Prefer acronym for legend
         data: lapDataArray,
         borderColor: driverInfo.teamColour,
-        backgroundColor: `${driverInfo.teamColour}B3`,
+        backgroundColor: `${driverInfo.teamColour}B3`, // Semi-transparent for area fill
         tension: 0.3,
         pointRadius: 2,
         pointHoverRadius: 6,
@@ -167,11 +194,11 @@ const PaceAnalysisChart = ({ selectedRace }) => {
     if (datasets.length > 0) {
         setChartData({ labels, datasets });
     } else if (driversToPlot.size > 0) {
-        setError("No lap data for selected drivers.");
+        setError("No lap data for selected drivers to plot.");
         setChartData(null);
     }
 
-  }, [driversToPlot, sessionLapsByDriver, sessionDrivers]);
+  }, [driversToPlot, sessionLapsByDriver, processedDrivers]);
 
   const handleDriverSelectionChange = (driverNumber) => {
     setDriversToPlot(prevSelected => {
@@ -192,49 +219,29 @@ const PaceAnalysisChart = ({ selectedRace }) => {
   if (!selectedRace || !selectedRace.session_key) {
     return <p className="results-placeholder">Select a race to view pace analysis.</p>;
   }
-  if (isLoading && sessionDrivers.length === 0) {
+  // isLoadingLaps is true, and processedDrivers might not be populated yet
+  if (isLoadingLaps && processedDrivers.length === 0) {
     return <p className="loading-message">Loading pace analysis data for {selectedRace.meeting_name || 'selected race'}...</p>;
   }
+  // Error state, especially if chart can't be generated
   if (error && (!chartData || chartData.datasets.length === 0)) {
     return <p className="error-message">{error}</p>;
   }
-  if (!isLoading && sessionDrivers.length === 0 && !error) {
-      return <p className="results-placeholder">No driver data available to generate pace chart for this session.</p>;
+  // If not loading, but no drivers (from prop or after filtering for laps) are available
+  if (!isLoadingLaps && processedDrivers.length === 0 && !error) {
+      return <p className="results-placeholder">No driver data with laps available to generate pace chart for this session.</p>;
   }
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: {
-        position: 'top',
-        labels: {
-          color: 'var(--color-text-primary)', // High-contrast legend text
-          font: { size: 12 }
-        }
-      },
-      title: {
-        display: true,
-        text: `Lap Times Comparison - ${selectedRace.meeting_name || 'Selected Race'}`,
-        color: 'var(--color-text-primary)', // High-contrast chart title
-        font: { size: 16, weight: 'bold' }
-      },
+      legend: { position: 'top', labels: { color: 'var(--color-text-primary)', font: { size: 12 }}},
+      title: { display: true, text: `Lap Times Comparison - ${selectedRace.meeting_name || 'Selected Race'}`, color: 'var(--color-text-primary)', font: { size: 16, weight: 'bold' }},
       tooltip: {
-        mode: 'index',
-        intersect: false,
-        backgroundColor: 'var(--color-bg-tertiary)', // Themed tooltip background
-        titleColor: 'var(--color-text-primary)',    // High-contrast tooltip title
-        bodyColor: 'var(--color-text-primary)',     // High-contrast tooltip body text
-        borderColor: 'var(--color-accent-red)',     // Accent border for tooltip
-        borderWidth: 1,
-        padding: 10,
-        bodyFont: { size: 12 },
-        titleFont: { size: 14, weight: 'bold' },
+        mode: 'index', intersect: false, backgroundColor: 'var(--color-bg-tertiary)', titleColor: 'var(--color-text-primary)', bodyColor: 'var(--color-text-primary)', borderColor: 'var(--color-accent-red)', borderWidth: 1, padding: 10, bodyFont: { size: 12 }, titleFont: { size: 14, weight: 'bold' },
         callbacks: {
-          title: function(tooltipItems) {
-            if (tooltipItems.length > 0) return tooltipItems[0].label;
-            return '';
-          },
+          title: function(tooltipItems) { return tooltipItems.length > 0 ? tooltipItems[0].label : ''; },
           label: function(context) {
             let label = context.dataset.label || '';
             if (label) label += ': ';
@@ -246,43 +253,8 @@ const PaceAnalysisChart = ({ selectedRace }) => {
       }
     },
     scales: {
-      x: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Lap Number',
-          color: 'var(--color-text-primary)', // High-contrast X-axis title
-          font: { size: 12, weight: 'bold' }
-        },
-        ticks: {
-          color: 'var(--color-text-primary)', // High-contrast X-axis ticks
-          font: {size: 10}
-        },
-        grid: {
-          color: 'var(--color-border)', // Subtle grid lines
-          borderColor: 'var(--color-border)'
-        }
-      },
-      y: {
-        display: true,
-        title: {
-          display: true,
-          text: 'Lap Time',
-          color: 'var(--color-text-primary)', // High-contrast Y-axis title
-          font: { size: 12, weight: 'bold' }
-        },
-        ticks: {
-          color: 'var(--color-text-primary)', // High-contrast Y-axis ticks
-          font: {size: 10},
-          callback: function(value) {
-            return formatLapTime(value);
-          }
-        },
-        grid: {
-          color: 'var(--color-border)', // Subtle grid lines
-          borderColor: 'var(--color-border)'
-        }
-      }
+      x: { display: true, title: { display: true, text: 'Lap Number', color: 'var(--color-text-primary)', font: { size: 12, weight: 'bold' }}, ticks: { color: 'var(--color-text-primary)', font: {size: 10} }, grid: { color: 'var(--color-border)', borderColor: 'var(--color-border)' }},
+      y: { display: true, title: { display: true, text: 'Lap Time', color: 'var(--color-text-primary)', font: { size: 12, weight: 'bold' }}, ticks: { color: 'var(--color-text-primary)', font: {size: 10}, callback: function(value){ return formatLapTime(value); }}, grid: { color: 'var(--color-border)', borderColor: 'var(--color-border)' }}
     },
     interaction: { intersect: false, mode: 'index' },
   };
@@ -291,19 +263,21 @@ const PaceAnalysisChart = ({ selectedRace }) => {
     <div>
       <div className="driver-selection-container">
         <h4>Select Drivers for Pace Chart (Max {MAX_DRIVERS_ON_CHART}):</h4>
-        {sessionDrivers.map(driver => (
+        {/* Use processedDrivers for UI, which is derived from allSessionDrivers and filtered by lap data */}
+        {processedDrivers.map(driver => (
           <label key={driver.driver_number} className="driver-checkbox-label">
             <input
               type="checkbox"
               checked={driversToPlot.has(driver.driver_number)}
               onChange={() => handleDriverSelectionChange(driver.driver_number)}
-              disabled={driversToPlot.size >= MAX_DRIVERS_ON_CHART && !driversToPlot.has(driver.driver_number)}
+              disabled={(driversToPlot.size >= MAX_DRIVERS_ON_CHART && !driversToPlot.has(driver.driver_number)) || isLoadingLaps}
             />
             <span style={{ color: driver.teamColour, fontWeight: driversToPlot.has(driver.driver_number) ? 'bold' : 'normal' }}>
-              {driver.fullName}
+              {driver.name_acronym || driver.fullName} {/* Prefer acronym */}
             </span>
           </label>
         ))}
+         {isLoadingLaps && processedDrivers.length > 0 && <p>Updating lap data...</p>}
       </div>
       {error && (!chartData || chartData.datasets.length === 0) && <p className="error-message">{error}</p>}
       {(chartData && chartData.datasets.length > 0) ? (
@@ -311,7 +285,7 @@ const PaceAnalysisChart = ({ selectedRace }) => {
           <Line options={options} data={chartData} />
         </div>
       ) : (
-        !isLoading && <p className="results-placeholder">Select drivers to display their pace comparison, or no data for current selection.</p>
+        !isLoadingLaps && !error && <p className="results-placeholder">Select drivers to display their pace comparison, or no data for current selection.</p>
       )}
     </div>
   );

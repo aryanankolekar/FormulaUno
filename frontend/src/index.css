@@ -96,6 +96,18 @@ h4 {
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+/* Ensure chart titles within their containers also get this styling if they are h4 */
+.pace-analysis-section > .chart-wrapper > h4,
+.driver-gap-chart-section > .chart-wrapper > h3 { /* DriverGapChart uses h3 */
+    color: var(--color-accent-red);
+    font-weight: 600;
+    border-bottom: 2px solid var(--color-accent-red);
+    padding-bottom: 0.4em;
+    margin-bottom: 1em;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 
 label {
   display: block;
@@ -137,7 +149,7 @@ button {
   font-size: 1em;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
   font-weight: 500;
 }
 
@@ -167,6 +179,13 @@ button:disabled {
   border-top: 1px solid var(--color-border);
   margin: 2.5em 0;
 }
+.section-divider-minor {
+  border: none;
+  border-top: 1px dashed var(--color-border); /* Dashed and more subtle */
+  margin: 1.5em auto; /* Centered with less vertical margin */
+  width: 80%;
+}
+
 
 hr {
   border: none;
@@ -216,13 +235,23 @@ ul li button {
   margin-top: 1em;
 }
 
-.race-summary-section, .pace-analysis-section {
+.race-summary-section,
+.pace-analysis-section, /* Existing styling for these sections */
+.driver-gap-chart-section { /* Add this for consistent styling if used as wrapper */
   margin-bottom: 2em;
   padding: 1.5em;
   background-color: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
+.chart-wrapper { /* Wrapper for individual charts if they are not inside a pre-styled section */
+  margin-bottom: 1.5em;
+  padding: 1.5em;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
 
 .race-results-container .race-meta-info {
   margin-bottom: 1em;
@@ -328,6 +357,17 @@ ul li button {
     border-radius: 6px;
     border: 1px solid var(--color-border);
 }
+.chart-area-prompt { /* Style for the placeholder message in chart area */
+    text-align: center;
+    padding: 2em 1em; /* Less padding than main initial-prompt */
+    font-style: italic;
+    color: var(--color-text-secondary);
+    background-color: transparent; /* No separate background, inherits from charts-display-area if needed */
+    border: 1px dashed var(--color-border); /* Dashed border to indicate it's a placeholder area */
+    border-radius: 4px;
+    margin-top: 1em;
+}
+
 
 p.error-message, p[style*="color: red"] {
     background-color: rgba(225, 6, 0, 0.15);
@@ -344,29 +384,27 @@ p.error-message, p[style*="color: red"] {
 .driver-selection-container {
   margin-bottom: 1.5em;
   padding: 1em;
-  background-color: var(--color-bg-primary); /* Slightly different bg for this control panel */
+  background-color: var(--color-bg-primary);
   border-radius: 4px;
   border: 1px solid var(--color-border);
 }
 
 .driver-selection-container h4 {
-  /* Already styled by .pace-analysis-section > h4 if it's a child,
-     but can add specific margin if needed here */
-  margin-top: 0; /* Reset top margin if it's the first element */
+  margin-top: 0;
   margin-bottom: 0.8em;
-  font-size: 1.1em; /* Match general h4 */
+  font-size: 1.1em;
 }
 
 .driver-checkbox-label {
-  display: inline-flex; /* Changed to inline-flex for better layout */
+  display: inline-flex;
   align-items: center;
   margin-right: 15px;
-  margin-bottom: 8px; /* Spacing for multiple lines */
+  margin-bottom: 8px;
   padding: 5px 8px;
   border-radius: 4px;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  border: 1px solid transparent; /* For smooth hover/checked border */
+  border: 1px solid transparent;
 }
 
 .driver-checkbox-label:hover {
@@ -375,19 +413,16 @@ p.error-message, p[style*="color: red"] {
 
 .driver-checkbox-label input[type="checkbox"] {
   margin-right: 8px;
-  width: auto; /* Override global input width */
-  accent-color: var(--color-accent-red); /* Style the checkbox itself */
+  width: auto;
+  accent-color: var(--color-accent-red);
 }
 .driver-checkbox-label input[type="checkbox"]:disabled + span {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-
-/* Styling for selected driver checkbox label */
 .driver-checkbox-label input[type="checkbox"]:checked + span {
-  /* font-weight: bold; /* Already applied via inline style in component */
-  /* color: var(--color-accent-red); /* Team color is applied inline */
+  /* Team color is applied inline */
 }
 
 
@@ -401,36 +436,25 @@ a:hover {
 }
 
 /* Styles for DriverGapChart.jsx */
-.driver-gap-chart-container {
-  padding: 1em;
-  /* background-color: var(--color-bg-tertiary); */
-  /* border: 1px solid var(--color-border); */
-  /* border-radius: 6px; */
-  margin-top: 1.5em;
+.driver-gap-chart-container { /* This is the root inside DriverGapChart.jsx */
+  /* padding: 1em; */ /* Padding is now on chart-wrapper or .driver-gap-chart-section */
+  /* margin-top: 1.5em; */ /* Margin is now on chart-wrapper or .driver-gap-chart-section */
 }
 
-.driver-gap-chart-container h3 {
+.driver-gap-chart-container h3 { /* Title within DriverGapChart */
   color: var(--color-text-primary);
   margin-bottom: 0.75em;
   text-align: center;
-}
-/* Placeholder styling for chart and messages within DriverGapChart */
-.chart-placeholder p,
-.driver-gap-chart-container .loading-message p, /* Specific to this container */
-.driver-gap-chart-container .error-message p, /* Specific to this container */
-.driver-gap-chart-container > .chart-placeholder /* Direct p children for messages, updated to target class */ {
-    text-align: center;
-    padding: 2em 1em;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary); /* Match other placeholders */
-    border-radius: 4px;
-    border: 1px solid var(--color-border);
-    margin-top: 1em; /* Add some space if it's below other elements like selectors */
+   /* Remove specific red accent for this internal title, let chart options handle chart title */
+  border-bottom: none;
+  text-transform: none;
+  letter-spacing: normal;
 }
 
-.driver-gap-chart-container .loading-message, /* Target the div wrapper */
-.driver-gap-chart-container .error-message {  /* Target the div wrapper */
+.chart-placeholder p, /* General placeholder text style */
+.driver-gap-chart-container .loading-message p,
+.driver-gap-chart-container .error-message p,
+.driver-gap-chart-container > .chart-placeholder {
     text-align: center;
     padding: 2em 1em;
     color: var(--color-text-secondary);
@@ -441,67 +465,106 @@ a:hover {
     margin-top: 1em;
 }
 
-.driver-gap-chart-container .error-message { /* Target the div wrapper */
+.driver-gap-chart-container .loading-message,
+.driver-gap-chart-container .error-message {
+    text-align: center;
+    padding: 2em 1em;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary);
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    margin-top: 1em;
+}
+
+.driver-gap-chart-container .error-message {
     background-color: rgba(225, 6, 0, 0.1);
     color: var(--color-accent-red);
     border-color: var(--color-accent-red);
 }
-.driver-gap-chart-container .error-message p { /* Reset p inside if needed */
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    margin:0;
-    color: var(--color-accent-red);
+.driver-gap-chart-container .error-message p {
+    background-color: transparent; border: none; padding: 0; margin:0; color: var(--color-accent-red);
 }
-.driver-gap-chart-container .loading-message p { /* Reset p inside if needed */
-    background-color: transparent;
-    border: none;
-    padding: 0;
-    margin:0;
-    color: var(--color-text-secondary);
+.driver-gap-chart-container .loading-message p {
+    background-color: transparent; border: none; padding: 0; margin:0; color: var(--color-text-secondary);
 }
 
-
-/* Styling for the div that will actually hold the chart, if needed for sizing */
 .driver-gap-chart-area {
-  height: 350px; /* Example height */
+  height: 350px;
   width: 100%;
   margin-top: 1em;
 }
-/* Ensure chart canvas is responsive */
 .driver-gap-chart-area canvas {
     max-height: 100%;
     max-width: 100%;
 }
 
-/* Driver Gap Selectors */
+/* Driver Gap Selectors within DriverGapChart.jsx */
 .driver-gap-selectors {
   display: flex;
-  justify-content: space-around; /* Or space-between */
+  justify-content: space-around;
   align-items: flex-start;
-  gap: 1em; /* Space between the two selector blocks */
+  gap: 1em;
   margin-bottom: 1.5em;
   padding: 1em;
-  background-color: var(--color-bg-primary); /* Match other control panels */
+  background-color: var(--color-bg-primary);
   border: 1px solid var(--color-border);
   border-radius: 4px;
 }
 
 .driver-selector {
-  flex: 1; /* Each selector takes equal space */
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
 .driver-selector label {
   margin-bottom: 0.5em;
-  font-weight: 500; /* Slightly less bold than main section titles */
+  font-weight: 500;
   color: var(--color-text-secondary);
-  font-size: 0.9em; /* Smaller label */
+  font-size: 0.9em;
 }
 
-/* Ensure select elements within these containers use the full width */
 .driver-selector select {
-    width: 100%; /* Already default but good to be explicit */
-    margin-bottom: 0; /* Remove default bottom margin if label is above */
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Chart Controls in App.jsx */
+.chart-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1em;
+  margin: 1.5em 0;
+  padding: 1em;
+  background-color: var(--color-bg-primary);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.chart-controls button {
+  background-color: var(--color-text-secondary);
+  color: var(--color-bg-primary);
+  font-weight: 500;
+  padding: 8px 15px;
+}
+
+.chart-controls button:hover {
+  background-color: var(--color-border);
+  color: var(--color-text-primary);
+}
+
+.chart-controls button.active {
+  background-color: var(--color-accent-red);
+  color: #fff;
+  border-color: var(--color-accent-hover-red);
+}
+.charts-display-area {
+  margin-top: 1em;
+}
+
+/* Ensure sections used as wrappers have consistent styling */
+.pace-analysis-section, .driver-gap-chart-section {
+  /* Styles already defined above, ensure they are suitable for chart display */
+   /* They have padding, background, border, border-radius, margin-bottom */
 }
