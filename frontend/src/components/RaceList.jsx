@@ -83,11 +83,25 @@ function RaceList({ season, onRaceSelect }) {
         meetingsMap.set(meeting.meeting_key, meeting.meeting_name);
       });
 
-      const processedRaces = raceSessions
-        .filter(session => session.meeting_key && session.session_key && session.circuit_key) // Ensure circuit_key exists
+      // Step 1: Filter for main race sessions by session_name
+      let filteredSessions = raceSessions.filter(session => session.session_name === 'Race');
+
+      // Step 2: Deduplicate by meeting_key
+      const uniqueMeetingKeys = new Set();
+      const uniqueMainRaceSessions = filteredSessions.filter(session => {
+        if (!session.meeting_key) return false;
+        if (!uniqueMeetingKeys.has(session.meeting_key)) {
+          uniqueMeetingKeys.add(session.meeting_key);
+          return true;
+        }
+        return false;
+      });
+
+      const processedRaces = uniqueMainRaceSessions
+        // .filter(session => session.meeting_key && session.session_key && session.circuit_key) // This filter might be redundant now
         .map(session => ({
-          session_key: session.session_key,
-          meeting_key: session.meeting_key,
+          session_key: session.session_key, // Ensure session_key is present for key prop and selection
+          meeting_key: session.meeting_key, // Already ensured by deduplication logic
           circuit_key: session.circuit_key, // Keep circuit_key for lookup
           meeting_name: meetingsMap.get(session.meeting_key) || session.session_name || 'Unknown Grand Prix',
           // circuit_short_name is still on session, can be used as fallback or primary
@@ -158,8 +172,8 @@ function RaceList({ season, onRaceSelect }) {
           const circuitDisplayName = circuitInfo?.short_name || race.circuit_short_name;
           const countryDisplay = circuitInfo?.country_code || 'N/A'; // Assuming country_code is available on circuitInfo
 
-          // New image URL construction for local SVGs
-          const imageUrl = `/circuits/${race.circuit_key}.svg`;
+          // New image URL construction for local PNGs
+          const imageUrl = `/circuits/${race.circuit_key}.png`;
           const altText = circuitInfo ? `Circuit layout for ${circuitInfo.name}` : `Circuit layout for ${race.circuit_short_name}`;
 
           return (
