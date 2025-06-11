@@ -283,10 +283,11 @@ function RaceResults({ selectedRace }) {
                       <span className="team-color-strip" style={{ backgroundColor: result.teamColour }}></span>
                       {result.countryCode && (
                         <img
-                          src={`https://flagcdn.com/w20/${result.countryCode.toLowerCase()}.png`}
+                          src={`https://flagsapi.com/${result.countryCode.toUpperCase()}/flat/24.png`}
                           alt={`${result.countryCode} flag`}
                           className="driver-country-flag"
                           title={result.countryCode} // Show country code on hover
+                          onError={(e) => { e.target.style.display = 'none'; }} /* Optional: hide if flag fails */
                         />
                       )}
                       <span className="driver-name">{result.fullName}</span>
