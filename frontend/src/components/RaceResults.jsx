@@ -160,23 +160,23 @@ function RaceResults({ selectedRace }) {
         if (currentDriverPosition === 1) {
           intervalOrGap = "Finished";
         } else if (lastPositionData && typeof currentDriverPosition === 'number') {
-          if (currentDriverLaps === winnerLapsCompleted && lastPositionData.gap_to_leader_seconds !== undefined && lastPositionData.gap_to_leader_seconds !== null) {
-            // On the same lap as the winner, show time gap
-            intervalOrGap = `+${parseFloat(lastPositionData.gap_to_leader_seconds).toFixed(3)}s`;
-          } else if (currentDriverLaps > 0 && currentDriverLaps < winnerLapsCompleted) {
-            // Laps down
+          if (currentDriverLaps === winnerLapsCompleted) { // On the same lap as winner
+            if (typeof lastPositionData.gap_to_leader_seconds === 'number' && isFinite(lastPositionData.gap_to_leader_seconds)) {
+              intervalOrGap = `+${parseFloat(lastPositionData.gap_to_leader_seconds).toFixed(3)}s`;
+            } else {
+              intervalOrGap = ""; // Same lap, but no specific time gap data available
+            }
+          } else if (currentDriverLaps > 0 && currentDriverLaps < winnerLapsCompleted) { // Laps down
             const lapsDown = winnerLapsCompleted - currentDriverLaps;
             intervalOrGap = `+${lapsDown} Lap${lapsDown > 1 ? 's' : ''}`;
-          } else if (currentDriverLaps === 0 ) {
+          } else { // Includes currentDriverLaps === 0 if position is numeric
              intervalOrGap = "DNF";
-          } else {
-             // Other cases, e.g. did not start but has position, or other anomalies
-             intervalOrGap = "N/A";
           }
         } else if (currentDriverPosition === 'N/C') { // Not classified
-          intervalOrGap = "DNF"; // Or "N/C" if preferred
+          intervalOrGap = "DNF";
         }
-        // Ensure DNF if laps are 0 but somehow got a numeric position (should be caught by N/C)
+
+        // If somehow classified numerically but completed 0 laps, ensure DNF.
         if (currentDriverLaps === 0 && typeof currentDriverPosition === 'number' && currentDriverPosition !== 1) {
             intervalOrGap = "DNF";
         }

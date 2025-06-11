@@ -850,4 +850,88 @@ a:hover {
   }
 }
 
+/* Styles for Race Results Enhancements */
+
+.driver-info-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.6em; /* Spacing between strip, flag, and name */
+}
+
+.team-color-strip {
+  display: inline-block;
+  width: 4px; /* Thickness of the strip */
+  height: 16px; /* Height of the strip, adjust to align with text */
+  border-radius: 1px; /* Slightly rounded edges */
+  flex-shrink: 0; /* Prevent strip from shrinking if space is tight */
+}
+
+.driver-country-flag {
+  width: 20px;   /* Matches w20 from flagcdn URL */
+  height: auto;  /* Maintain aspect ratio, or set fixed e.g., 13px */
+  /* border: 1px solid var(--color-border); */ /* Optional: border for flags */
+  object-fit: contain; /* Ensure flag is not distorted */
+  flex-shrink: 0; /* Prevent flag from shrinking */
+}
+
+/* Ensure .driver-name within the wrapper doesn't cause issues */
+.driver-info-wrapper .driver-name {
+  /* Existing .driver-name styles should apply. Add any specific overrides if needed. */
+  /* For example, if it needs to grow to take remaining space: */
+  /* flex-grow: 1; */
+}
+
+/* == DIAGNOSTIC STYLES - START == */
+/* Ensure these are specific enough or use !important if needed */
+
+/* .driver-info-wrapper { */
+  /* border: 2px solid orange !important; */ /* See the wrapper bounds */
+  /* padding: 2px !important; */
+  /* min-height: 20px; */ /* Ensure wrapper has some height */
+/* } */
+
+/* .team-color-strip { */
+  /* display: inline-block !important; */
+  /* width: 10px !important; */ /* Wider for visibility */
+  /* height: 16px !important; */
+  /* border: 2px solid lime !important; */
+  /* background-color: magenta !important; */ /* Override inline style for test */
+  /* color: black !important; */ /* For fallback text TC */
+  /* font-size: 8px !important; */ /* For fallback text TC */
+  /* text-align: center !important; */ /* For fallback text TC */
+/* } */
+
+/* .driver-country-flag { */
+  /* display: inline-block !important; */
+  /* width: 20px !important; */ /* Original intended width */
+  /* height: 15px !important; */ /* Fixed height for test */
+  /* border: 2px solid cyan !important; */
+  /* background-color: yellow !important; */ /* Fallback if src fails or for placeholder */
+  /* color: black !important; */ /* For alt text if image is broken */
+  /* font-size: 8px !important; */ /* For alt text */
+  /* overflow: hidden !important; */ /* Prevent alt text from making it huge */
+/* } */
+/* == DIAGNOSTIC STYLES - END == */
+
+/* == DIAGNOSTIC STYLES - TABLE CELLS - START == */
+/* .results-table .col-driver { */
+  /* border-left: 3px dotted red !important; */
+  /* border-right: 3px dotted red !important; */
+  /* background-color: rgba(255,0,0,0.05) !important; */ /* Optional faint bg */
+/* } */
+
+/* .results-table .col-team { */
+  /* border-left: 3px dotted green !important; */
+  /* border-right: 3px dotted green !important; */
+  /* background-color: rgba(0,255,0,0.05) !important; */ /* Optional faint bg */
+/* } */
+
+/* Add overflow hidden to see if content is breaking bounds */
+/* .results-table .col-driver, */
+/* .results-table .col-driver .driver-info-wrapper, */
+/* .results-table .col-driver .driver-name { */
+    /* overflow: hidden !important; */
+    /* text-overflow: ellipsis !important; */
+/* } */
+/* == DIAGNOSTIC STYLES - TABLE CELLS - END == */
 [end of frontend/src/index.css]
