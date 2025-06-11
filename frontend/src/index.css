@@ -619,6 +619,36 @@ a:hover {
   margin-left: auto;
   margin-right: auto;
 }
+/* New container for telemetry selectors if needed */
+.telemetry-selectors-container {
+    display: flex;
+    gap: 1em; /* Space between driver and lap selector */
+    margin-bottom: 1.5em;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+.telemetry-selectors-container .driver-selector,
+.telemetry-selectors-container .lap-selector {
+    flex: 1; /* Each selector takes equal space */
+    min-width: 250px; /* Minimum width before wrapping */
+    padding: 1em;
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+}
+.telemetry-selectors-container .driver-selector label,
+.telemetry-selectors-container .lap-selector label {
+    margin-bottom: 0.5em;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    font-size: 0.9em;
+    display: block; /* Ensure label is above select */
+}
+.telemetry-selectors-container .driver-selector select,
+.telemetry-selectors-container .lap-selector select {
+    width: 100%;
+    margin-bottom: 0;
+}
+
 
 .driver-telemetry-chart-container .driver-selector label {
   margin-bottom: 0.5em;
@@ -718,3 +748,5 @@ a:hover {
     width: 100%;
     margin-top: 0; /* Reset margin if it was for the old layout */
 }
+
+[end of frontend/src/index.css]
