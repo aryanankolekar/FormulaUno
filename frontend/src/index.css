@@ -4,12 +4,12 @@
   --color-bg-primary: #181818; /* Very dark grey, page background */
   --color-bg-secondary: #282828; /* Slightly lighter, main app container background */
   --color-bg-tertiary: #1F1F1F; /* For cards/panels within app container, slightly different from primary */
-  --color-text-primary: #E0E0E0;
-  --color-text-secondary: #A0A0A0;
+  --color-text-primary: #FFFFFF;
+  --color-text-secondary: #FFFFFF;
   --color-accent-red: #E10600;
   --color-accent-hover-red: #B80500;
   --color-accent-purple: #9B59B6;
-  --color-border: #404040;
+  --color-border: #FFFFFF;
   --color-table-header-bg: #202020;
   --color-table-row-even-bg: #2c2c2c;
   --color-table-row-hover-bg: #383838; /* Defined for table row hover */
