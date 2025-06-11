@@ -568,3 +568,106 @@ a:hover {
   /* Styles already defined above, ensure they are suitable for chart display */
    /* They have padding, background, border, border-radius, margin-bottom */
 }
+
+/* Styles for DriverTelemetryChart.jsx */
+.driver-telemetry-chart-section {
+  /* Consistent with .pace-analysis-section and .driver-gap-chart-section */
+  margin-bottom: 2em;
+  padding: 1.5em;
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+}
+
+.driver-telemetry-chart-container h3 {
+  /* Consistent with .driver-gap-chart-container h3 */
+  color: var(--color-text-primary);
+  margin-bottom: 0.75em;
+  text-align: center;
+  border-bottom: none;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+.driver-telemetry-chart-area {
+  /* Consistent with .driver-gap-chart-area */
+  height: 450px; /* Adjusted height for potentially more complex telemetry data */
+  width: 100%;
+  margin-top: 1em;
+}
+
+.driver-telemetry-chart-area canvas {
+  max-height: 100%;
+  max-width: 100%;
+}
+
+/* Styling for the driver selector within Telemetry Chart, similar to DriverGapChart */
+.driver-telemetry-chart-container .driver-selector {
+  /* Assuming a similar structure for the selector as in DriverGapChart */
+  margin-bottom: 1.5em;
+  padding: 1em;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  max-width: 400px; /* Or adjust as needed */
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.driver-telemetry-chart-container .driver-selector label {
+  margin-bottom: 0.5em;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+}
+
+.driver-telemetry-chart-container .driver-selector select {
+  width: 100%;
+  margin-bottom: 0; /* If it's the only element in its container */
+}
+
+/* Placeholder and message styling, ensure consistency */
+.driver-telemetry-chart-container .chart-placeholder p,
+.driver-telemetry-chart-container .loading-message p,
+.driver-telemetry-chart-container .error-message p {
+    text-align: center;
+    padding: 2em 1em;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary); /* This was used in DriverGapChart */
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    margin-top: 1em;
+}
+.driver-telemetry-chart-container .loading-message p,
+.driver-telemetry-chart-container .error-message p {
+  background-color: transparent;
+  border: none;
+  padding:0;
+  margin:0;
+}
+
+
+.driver-telemetry-chart-container .loading-message,
+.driver-telemetry-chart-container .error-message {
+    text-align: center;
+    padding: 2em 1em; /* Main padding on the container div */
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background-color: var(--color-bg-tertiary);
+    border-radius: 4px;
+    border: 1px solid var(--color-border);
+    margin-top: 1em;
+}
+
+.driver-telemetry-chart-container .error-message {
+    background-color: rgba(225, 6, 0, 0.1); /* Red tint for error */
+    color: var(--color-accent-red);
+    border-color: var(--color-accent-red);
+}
+.driver-telemetry-chart-container .error-message p {
+    color: var(--color-accent-red); /* Ensure p tag inherits color */
+}
+.driver-telemetry-chart-container .loading-message p {
+    color: var(--color-text-secondary); /* Ensure p tag inherits color */
+}

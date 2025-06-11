@@ -4,6 +4,7 @@ import RaceList from './components/RaceList';
 import RaceResults from './components/RaceResults';
 import PaceAnalysisChart from './components/PaceAnalysisChart';
 import DriverGapChart from './components/DriverGapChart';
+import DriverTelemetryChart from "./components/DriverTelemetryChart";
 import axios from 'axios';
 import { OPENF1_BASE_URL } from './apiConfig';
 
@@ -15,33 +16,23 @@ function App() {
   const [allSessionDrivers, setAllSessionDrivers] = useState([]);
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
 
-  const [visibleCharts, setVisibleCharts] = useState({
-    paceChart: false,
-    gapChart: false,
-  });
+  const [activeChart, setActiveChart] = useState('pace'); // 'pace', 'gap', 'telemetry'
 
   const detailsViewRef = useRef(null);
-
-  const toggleChartVisibility = (chartName) => {
-    setVisibleCharts(prev => ({
-      ...prev,
-      [chartName]: !prev[chartName]
-    }));
-  };
 
   const handleSeasonSelected = (season) => {
     setCurrentSeason(season);
     setSelectedRace(null);
     setAllSessionDrivers([]);
     setViewMode('selectRace');
-    setVisibleCharts({ paceChart: false, gapChart: false });
+    setActiveChart('pace'); // Reset active chart
     console.log("Selected season in App:", season);
   };
 
   const handleRaceSelected = (race) => {
     setSelectedRace(race);
     setViewMode('viewRaceDetails');
-    setVisibleCharts({ paceChart: false, gapChart: false });
+    setActiveChart('pace'); // Reset active chart
     console.log("Selected race in App:", race);
   };
 
@@ -49,7 +40,7 @@ function App() {
     setSelectedRace(null);
     setAllSessionDrivers([]);
     setViewMode('selectRace');
-    setVisibleCharts({ paceChart: false, gapChart: false });
+    setActiveChart('pace'); // Reset active chart
   };
 
   useEffect(() => {
@@ -114,58 +105,46 @@ function App() {
 
           {!isLoadingDrivers && allSessionDrivers.length > 0 && (
             <div className="chart-controls">
-              <button
-                onClick={() => toggleChartVisibility('paceChart')}
-                className={visibleCharts.paceChart ? 'active' : ''}
-              >
-                {visibleCharts.paceChart ? 'Hide' : 'Show'} Overall Pace Chart
-              </button>
-              <button
-                onClick={() => toggleChartVisibility('gapChart')}
-                className={visibleCharts.gapChart ? 'active' : ''}
-              >
-                {visibleCharts.gapChart ? 'Hide' : 'Show'} Head-to-Head Gap Chart
-              </button>
+              <button onClick={() => setActiveChart('pace')} className={activeChart === 'pace' ? 'active' : ''}>Pace Analysis</button>
+              <button onClick={() => setActiveChart('gap')} className={activeChart === 'gap' ? 'active' : ''}>Driver Gap</button>
+              <button onClick={() => setActiveChart('telemetry')} className={activeChart === 'telemetry' ? 'active' : ''}>Telemetry</button>
             </div>
           )}
 
-          {!isLoadingDrivers && allSessionDrivers.length > 0 ? (
-            <div className="charts-display-area">
-              {visibleCharts.paceChart && (
-                <div className="chart-wrapper pace-analysis-section"> {/* Use existing section class for styling */}
-                  <PaceAnalysisChart
-                    selectedRace={selectedRace}
-                    allSessionDrivers={allSessionDrivers}
-                  />
-                </div>
-              )}
+          <div className="charts-display-area">
+            {/* Conditional rendering based on activeChart */}
+            {activeChart === 'pace' && selectedRace && allSessionDrivers.length > 0 && (
+              <section className="pace-analysis-section" aria-labelledby="pace-analysis-heading">
+                <h4 id="pace-analysis-heading">Pace Analysis</h4>
+                <PaceAnalysisChart selectedRace={selectedRace} allSessionDrivers={allSessionDrivers} />
+              </section>
+            )}
+            {activeChart === 'gap' && selectedRace && allSessionDrivers.length > 0 && (
+              <section className="driver-gap-chart-section" aria-labelledby="driver-gap-heading">
+                <h4 id="driver-gap-heading">Driver Gap Analysis</h4>
+                <DriverGapChart selectedRace={selectedRace} allSessionDrivers={allSessionDrivers} />
+              </section>
+            )}
+            {activeChart === 'telemetry' && selectedRace && allSessionDrivers.length > 0 && (
+              <section className="driver-telemetry-chart-section" aria-labelledby="driver-telemetry-heading">
+                <h4 id="driver-telemetry-heading">Driver Telemetry</h4>
+                <DriverTelemetryChart selectedRace={selectedRace} allSessionDrivers={allSessionDrivers} />
+              </section>
+            )}
 
-              {visibleCharts.paceChart && visibleCharts.gapChart && (
-                <hr className="section-divider-minor" /> /* Optional: Use a more subtle divider */
-              )}
-
-              {visibleCharts.gapChart && (
-                <div className="chart-wrapper driver-gap-chart-section"> {/* Use a distinct class or existing one */}
-                  <DriverGapChart
-                    selectedRace={selectedRace}
-                    allSessionDrivers={allSessionDrivers}
-                  />
-                </div>
-              )}
-
-              {!visibleCharts.paceChart && !visibleCharts.gapChart && (
-                <p className="initial-prompt chart-area-prompt">
-                  Select a chart to display using the buttons above.
-                </p>
-              )}
-            </div>
-          ) : isLoadingDrivers ? (
-            <p className="loading-message">Loading driver data for charts...</p>
-          ) : (
-            <p className="results-placeholder">
-              Driver data for this session is unavailable, charts cannot be displayed.
-            </p>
-          )}
+            {/* Informative messages */}
+            {selectedRace && allSessionDrivers.length === 0 && !isLoadingDrivers && (
+                <p className="results-placeholder">No driver data available for this session to display charts.</p>
+            )}
+            {isLoadingDrivers && (
+                <p className="loading-message">Loading driver data for charts...</p>
+            )}
+            {/* Prompt to select a chart if a race is selected, drivers are loaded, but no chart is active (though default is 'pace') */}
+            {/* This might be less relevant now with a default active chart */}
+            {selectedRace && allSessionDrivers.length > 0 && !isLoadingDrivers && !activeChart && (
+                 <p className="initial-prompt chart-area-prompt">Select a chart type to display.</p>
+            )}
+          </div>
         </div>
       )}
     </div>
