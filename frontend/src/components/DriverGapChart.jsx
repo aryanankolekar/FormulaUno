@@ -236,33 +236,31 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
           ? `#${driver2Info.team_colour}`
           : "var(--color-accent-red)";
 
-        let borderDashStyle = null;
+        const datasetConfig = {
+          label: `Gap: ${d2Name} to ${d1Name}`,
+          data: gapData,
+          borderColor: teamColorD2,
+          backgroundColor: `${teamColorD2}80`,
+          tension: 0.2,
+          fill: false,
+          pointRadius: Math.max(
+            1,
+            Math.min(3, Math.floor(150 / commonLaps.length))
+          ),
+          pointHoverRadius: 5,
+        };
+
         if (
           driver1Info &&
           driver2Info &&
           driver1Info.team_name === driver2Info.team_name
         ) {
-          borderDashStyle = [5, 5];
+          datasetConfig.borderDash = [5, 5];
         }
 
         setChartData({
           labels: commonLaps,
-          datasets: [
-            {
-              label: `Gap: ${d2Name} to ${d1Name}`,
-              data: gapData,
-              borderColor: teamColorD2,
-              backgroundColor: `${teamColorD2}80`,
-              tension: 0.2,
-              fill: false,
-              pointRadius: Math.max(
-                1,
-                Math.min(3, Math.floor(150 / commonLaps.length))
-              ),
-              pointHoverRadius: 5,
-              borderDash: borderDashStyle,
-            },
-          ],
+          datasets: [datasetConfig],
         });
       } catch (e) {
         console.error("Error processing chart data:", e);
