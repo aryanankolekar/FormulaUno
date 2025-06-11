@@ -1,20 +1,26 @@
-/* Global F1 Dark Theme Styles */
+/* Global F1 Light Theme Styles */
 
 :root {
-  --color-bg-primary: #181818; /* Very dark grey, page background */
-  --color-bg-secondary: #282828; /* Slightly lighter, main app container background */
-  --color-bg-tertiary: #1F1F1F; /* For cards/panels within app container, slightly different from primary */
-  --color-text-primary: #FFFFFF;
-  --color-text-secondary: #FFFFFF;
-  --color-accent-red: #E10600;
-  --color-accent-hover-red: #B80500;
-  --color-accent-purple: #9B59B6;
-  --color-border: #FFFFFF;
-  --color-table-header-bg: #202020;
-  --color-table-row-even-bg: #2c2c2c;
-  --color-table-row-hover-bg: #383838; /* Defined for table row hover */
-  --color-list-item-hover-bg: #252525; /* For ul li hover */
-  --font-family-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  /* Light Theme Colors */
+  --color-bg-primary: #FFFFFF;         /* Main page background: White */
+  --color-bg-secondary: #F0F0F0;       /* App container background: Very Light Grey */
+  --color-bg-tertiary: #FAFAFA;        /* Cards/panels background: Off-White */
+
+  --color-text-primary: #212121;       /* Primary text: Very Dark Grey/Almost Black */
+  --color-text-secondary: #555555;     /* Secondary text: Dark Grey */
+
+  --color-accent-red: #E10600;         /* F1 Red (Keep) */
+  --color-accent-hover-red: #B80500;  /* F1 Red Hover (Keep) */
+  --color-accent-purple: #9B59B6;      /* Purple Accent (Keep for now for e.g. fastest lap) */
+
+  --color-border: #D0D0D0;             /* Borders, chart grid lines: Medium Grey */
+
+  --color-table-header-bg: #E9E9E9;    /* Table header background: Light Grey */
+  --color-table-row-even-bg: #F8F8F8;  /* Table even row background: Very Light Grey */
+  --color-table-row-hover-bg: #E0E0E0; /* Table row hover: Light Grey Hover */
+  --color-list-item-hover-bg: #E8E8E8; /* List item hover: Light Grey Hover */
+
+  --font-family-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; /* Keep existing font */
 }
 
 /* Basic Reset / Normalize */
@@ -670,4 +676,58 @@ a:hover {
 }
 .driver-telemetry-chart-container .loading-message p {
     color: var(--color-text-secondary); /* Ensure p tag inherits color */
+}
+
+/* Styles for the 6-chart telemetry layout */
+.telemetry-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* 1 column by default for small screens */
+  gap: 1.5em; /* Spacing between charts */
+  margin-top: 1.5em;
+}
+
+.telemetry-chart-item {
+  background-color: var(--color-bg-primary); /* Slightly different background for each chart item for distinction */
+  padding: 1em;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  /* height: 300px; */ /* Fixed height for each chart item, or use aspect-ratio */
+  /* Child canvas will fill this. Chart.js options should have maintainAspectRatio: false */
+}
+
+.telemetry-chart-item canvas {
+  max-height: 250px; /* Or adjust based on .telemetry-chart-item padding and desired title space */
+  width: 100% !important; /* Ensure canvas respects container width */
+}
+
+
+/* Responsive adjustments for the grid */
+@media (min-width: 768px) { /* Medium screens - 2 columns */
+  .telemetry-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) { /* Large screens - 3 columns */
+  .telemetry-charts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .telemetry-chart-item canvas {
+    max-height: 220px; /* Adjust canvas height for 3 columns if needed */
+  }
+}
+
+/* Ensure the main section for telemetry charts has some padding */
+.driver-telemetry-chart-section {
+  /* This class was added in a previous step, ensure its padding is appropriate */
+  padding: 1.5em; /* Or adjust as needed */
+}
+
+/* Remove fixed height from the old single chart area if it conflicts */
+/* .driver-telemetry-chart-area was for the single chart, may not be needed now or should be adapted */
+/* If .driver-telemetry-chart-area is still used as a wrapper *inside* telemetry-chart-item, adjust its height to auto or 100% */
+.driver-telemetry-chart-area {
+    height: 100%; /* Allow it to fill the parent grid item */
+    width: 100%;
+    margin-top: 0; /* Reset margin if it was for the old layout */
 }
