@@ -63,102 +63,161 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
   const [isProcessingChart, setIsProcessingChart] = useState(false);
   const [error, setError] = useState("");
   const [selectedDriver, setSelectedDriver] = useState(null);
+  const [driverLaps, setDriverLaps] = useState([]);
+  const [selectedLap, setSelectedLap] = useState(null);
+  const [isLoadingLapsList, setIsLoadingLapsList] = useState(false);
+  const [lapsError, setLapsError] = useState("");
+
 
   // Effect 1: Reset selections and data when the race or drivers prop changes
   useEffect(() => {
     setSelectedDriver(null);
-    setIndividualChartsData(null); // Reset new state
+    setIndividualChartsData(null);
     setTelemetryData(null);
+    setDriverLaps([]);
+    setSelectedLap(null);
     setError("");
+    setLapsError("");
     setIsLoadingTelemetry(false);
     setIsProcessingChart(false);
+    setIsLoadingLapsList(false);
   }, [selectedRace, allSessionDrivers]);
 
-  // Effect 2: Fetch telemetry data for the selected session and driver
+  // New Effect: Fetch Laps for Selected Driver
   useEffect(() => {
     if (selectedRace && selectedRace.session_key && selectedDriver) {
+      setIsLoadingLapsList(true);
+      setDriverLaps([]);
+      setSelectedLap(null); // Reset selected lap when driver changes
+      setLapsError("");
+      // Also clear existing chart data as it's no longer valid for the new driver's laps
+      setIndividualChartsData(null);
+      setTelemetryData(null);
+
+      axios.get(`${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&driver_number=${selectedDriver}&lap_duration>0`)
+        .then(response => {
+          if (Array.isArray(response.data)) {
+            const sortedLaps = response.data.sort((a, b) => a.lap_number - b.lap_number);
+            setDriverLaps(sortedLaps.map(lap => ({ lap_number: lap.lap_number, date_start: lap.date_start, lap_duration: lap.lap_duration })));
+          } else {
+            console.error("Driver laps data is not an array:", response.data);
+            setDriverLaps([]);
+            setLapsError("Failed to load laps for driver: Unexpected format.");
+          }
+          setIsLoadingLapsList(false);
+        })
+        .catch(err => {
+          console.error(`Error fetching laps for driver ${selectedDriver}:`, err);
+          setLapsError("Failed to load laps for the selected driver.");
+          setDriverLaps([]);
+          setIsLoadingLapsList(false);
+        });
+    } else {
+      setDriverLaps([]);
+      setSelectedLap(null);
+      setIsLoadingLapsList(false);
+      setLapsError("");
+    }
+  }, [selectedRace?.session_key, selectedDriver]);
+
+
+  // Effect for fetching telemetry data (previously Effect 2)
+  // Now depends on selectedLap as well
+  useEffect(() => {
+    // Only fetch if a driver AND a lap are selected
+    if (selectedRace && selectedRace.session_key && selectedDriver && selectedLap) {
       setIsLoadingTelemetry(true);
       setIsProcessingChart(false);
       setError("");
       setTelemetryData(null);
-      setIndividualChartsData(null); // Reset new state
+      setIndividualChartsData(null);
 
-      // TODO: Replace with actual telemetry API endpoint and parameters
-      // Example: /telemetry?session_key={session_key}&driver_number={driver_number}&fields=time,speed,rpm,throttle,brake,gear,drs
-      // The structure of the response data will determine how it's processed.
-      setTimeout(() => {
-        // MOCK DATA - Updated with gear and drs
-        const mockData = [
-          { time: 0, speed: 0, rpm: 800, throttle: 0, brake: 1, gear: 1, drs: 0 },
-          { time: 1, speed: 50, rpm: 2000, throttle: 0.5, brake: 0, gear: 2, drs: 0 },
-          { time: 2, speed: 100, rpm: 3000, throttle: 1, brake: 0, gear: 3, drs: 1 },
-          { time: 3, speed: 150, rpm: 4000, throttle: 1, brake: 0, gear: 4, drs: 1 },
-          { time: 4, speed: 120, rpm: 3500, throttle: 0.7, brake: 0, gear: 4, drs: 0 },
-          { time: 5, speed: 80, rpm: 2500, throttle: 0.2, brake: 1, gear: 3, drs: 0 },
-        ];
-        setTelemetryData(mockData);
+      const lapInfo = driverLaps.find(lap => lap.lap_number === selectedLap);
+      if (!lapInfo || !lapInfo.date_start || typeof lapInfo.lap_duration !== 'number') {
+        setError("Selected lap information is incomplete or missing.");
         setIsLoadingTelemetry(false);
-      }, 1000);
+        return;
+      }
 
-      // Example using axios (ensure to request all necessary fields):
-      // axios
-      //   .get(
-      //     `${OPENF1_BASE_URL}/telemetry?session_key=${selectedRace.session_key}&driver_number=${selectedDriver}&fields=time,speed,rpm,throttle,brake,gear,drs`
-      //   )
-      //   .then((response) => {
-      //     if (Array.isArray(response.data)) {
-      //       setTelemetryData(response.data);
-      //     } else {
-      //       console.error("Telemetry data is not an array:", response.data);
-      //       setTelemetryData([]); // Set to empty array to prevent errors in processing
-      //       setError("Failed to load telemetry data: Unexpected format.");
-      //     }
-      //     setIsLoadingTelemetry(false);
-      //   })
-      //   .catch((err) => {
-      //     console.error(
-      //       `Error fetching telemetry data for session ${selectedRace.session_key}, driver ${selectedDriver}:`,
-      //       err
-      //     );
-      //     setError("Failed to load telemetry data for the session and driver.");
-      //     setTelemetryData(null);
-      //     setIsLoadingTelemetry(false);
-      //   });
+      const startDate = new Date(lapInfo.date_start);
+      const endDate = new Date(startDate.getTime() + lapInfo.lap_duration * 1000);
+
+      const startDateISO = startDate.toISOString();
+      const endDateISO = endDate.toISOString();
+
+      axios.get(`${OPENF1_BASE_URL}/car_data?session_key=${selectedRace.session_key}&driver_number=${selectedDriver}&date>=${startDateISO}&date<=${endDateISO}`)
+        .then(response => {
+          if (Array.isArray(response.data)) {
+            // Sort data by date just in case it's not perfectly ordered
+            const sortedData = response.data.sort((a, b) => new Date(a.date) - new Date(b.date));
+            setTelemetryData(sortedData);
+          } else {
+            console.error("Fetched car_data is not an array:", response.data);
+            setTelemetryData([]);
+            setError("Failed to load telemetry for lap: Unexpected format.");
+          }
+          setIsLoadingTelemetry(false);
+        })
+        .catch(err => {
+          console.error(`Error fetching car_data for session ${selectedRace.session_key}, driver ${selectedDriver}, lap ${selectedLap}:`, err);
+          setError("Failed to load telemetry data for the selected lap.");
+          setTelemetryData(null);
+          setIsLoadingTelemetry(false);
+        });
     } else {
       setTelemetryData(null);
-      setIndividualChartsData(null); // Reset new state
+      setIndividualChartsData(null);
       setIsLoadingTelemetry(false);
       setIsProcessingChart(false);
-      setError("");
+      // Don't clear main error here if it's a lap list error for example
     }
-  }, [selectedRace?.session_key, selectedDriver]);
+  }, [selectedRace?.session_key, selectedDriver, selectedLap, driverLaps]); // driverLaps added to re-evaluate if needed, though API call depends on selectedLap
 
-  // Effect 3: Process telemetryData into individualChartsData for six charts
+
+  // Effect for processing telemetry data (previously Effect 3)
   useEffect(() => {
-    if (telemetryData && telemetryData.length > 0 && allSessionDrivers && allSessionDrivers.length > 0 && selectedDriver) {
+    if (telemetryData && telemetryData.length > 0 && allSessionDrivers && allSessionDrivers.length > 0 && selectedDriver && selectedLap) {
       setIsProcessingChart(true);
-      setError("");
-      setIndividualChartsData(null); // Clear previous multi-chart data
+      setIndividualChartsData(null);
+
+      const lapInfo = driverLaps.find(lap => lap.lap_number === selectedLap);
+      if (!lapInfo || !lapInfo.date_start) {
+          setError("Cannot process telemetry: Lap start time is missing.");
+          setIsProcessingChart(false);
+          return;
+      }
+      const lapStartTimeMillis = new Date(lapInfo.date_start).getTime();
 
       try {
         const driverInfo = allSessionDrivers.find(d => d.driver_number === selectedDriver);
         const driverNameAcronym = driverInfo?.name_acronym || `Driver ${selectedDriver}`;
-        const labels = telemetryData.map(d => d.time); // Common X-axis labels (time)
 
-        const createChartConfig = (telemetryKey, yAxisTitle, color, yAxisOptions = {}) => {
-          const dataValues = telemetryData.map(d => d[telemetryKey]);
+        // Calculate X-axis labels: time in seconds from lap start
+        const labels = telemetryData.map(d => (new Date(d.date).getTime() - lapStartTimeMillis) / 1000);
+
+        const createChartConfig = (telemetryKey, yAxisTitle, color, yAxisOptions = {}, isStepped = false) => {
+          // Ensure n_gear is mapped to gear if that's the field name from API
+          const actualTelemetryKey = telemetryKey === 'gear' && telemetryData[0] && typeof telemetryData[0].n_gear !== 'undefined' ? 'n_gear' : telemetryKey;
+          const dataValues = telemetryData.map(d => d[actualTelemetryKey]);
+
+          const datasetOptions = {
+            label: `${yAxisTitle} (${driverNameAcronym})`,
+            data: dataValues,
+            borderColor: color,
+            backgroundColor: `${color}80`, // Add some transparency
+            fill: false,
+            pointRadius: isStepped ? 0 : 2, // No points for stepped lines
+            tension: isStepped ? 0 : 0.2,   // No tension for stepped lines
+          };
+
+          if (isStepped) {
+            datasetOptions.stepped = true;
+          }
+
           return {
             data: {
               labels: labels,
-              datasets: [{
-                label: `${yAxisTitle} (${driverNameAcronym})`,
-                data: dataValues,
-                borderColor: color,
-                backgroundColor: `${color}80`, // Add some transparency
-                tension: 0.2,
-                fill: false,
-                pointRadius: 2, // Smaller points for dense data
-              }],
+              datasets: [datasetOptions],
             },
             options: {
               ...baseChartOptions,
@@ -196,27 +255,29 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           throttle: createChartConfig('throttle', 'Throttle (%)', 'green', { min: 0, max: 1, ticks: { stepSize: 0.1 } }),
           brake: createChartConfig('brake', 'Brake (0=Off, 1=On)', 'blue', { min: 0, max: 1, ticks: { stepSize: 1 } }),
           rpm: createChartConfig('rpm', 'RPM', 'var(--color-accent-purple)'),
-          gear: createChartConfig('gear', 'Gear', 'orange', { min: 0, max: 8, ticks: { stepSize: 1 } }), // Assuming gear 0 for Neutral/Error
-          drs: createChartConfig('drs', 'DRS (0=Off, 1..12=On)', 'cyan', { min: 0, max: 12, ticks: { stepSize: 1 } }), // DRS can have multiple zones/values in OpenF1
+          gear: createChartConfig('gear', 'Gear', 'orange', { min: 0, max: 8, ticks: { stepSize: 1 } }, true /* isStepped */),
+          drs: createChartConfig('drs', 'DRS (0=Off, 1..12=On)', 'cyan', { min: 0, max: 12, ticks: { stepSize: 1 } }),
         });
 
       } catch (e) {
-        console.error("Error processing chart data:", e);
-        setError("Failed to process data for telemetry charts.");
+        console.error("Error processing chart data for lap:", e);
+        setError("Failed to process telemetry data for the selected lap.");
         setIndividualChartsData(null);
       } finally {
         setIsProcessingChart(false);
       }
     } else {
-      setIndividualChartsData(null);
-      if (selectedDriver && telemetryData && telemetryData.length === 0) {
-        setError("No telemetry data points available for this driver/session.");
+      setIndividualChartsData(null); // Clear charts if conditions not met
+      if (selectedDriver && selectedLap && telemetryData && telemetryData.length === 0 && !isLoadingTelemetry) {
+        setError("No telemetry data points found for the selected driver and lap.");
+      } else if (selectedDriver && !selectedLap && !isLoadingLapsList && driverLaps.length > 0) {
+        //setError("Please select a lap to view telemetry."); // This is more of a prompt
       } else if (selectedDriver && (!allSessionDrivers || allSessionDrivers.length === 0)) {
         setError("Driver details are not available to process the chart.");
       }
       setIsProcessingChart(false);
     }
-  }, [selectedDriver, telemetryData, allSessionDrivers]);
+  }, [selectedDriver, selectedLap, telemetryData, allSessionDrivers]); // Added selectedLap
 
 
   if (!selectedRace || !selectedRace.session_key) {
@@ -227,26 +288,50 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
     );
   }
 
-  const renderDriverSelector = () => (
-    <div className="driver-selector">
-      <label htmlFor="driver-telemetry-select">Select Driver:</label>
-      <select
-        id="driver-telemetry-select"
-        value={selectedDriver || ""}
-        onChange={(e) => {
-          setSelectedDriver(e.target.value ? parseInt(e.target.value) : null);
-          setIndividualChartsData(null); // Clear charts when driver changes
-        }}
-        disabled={!allSessionDrivers || allSessionDrivers.length === 0 || isLoadingTelemetry || isProcessingChart}
-      >
-        <option value="">-- Select Driver --</option>
-        {allSessionDrivers &&
-          allSessionDrivers.map((driver) => (
-            <option key={`tel-chart-${driver.driver_number}`} value={driver.driver_number}>
-              {driver.fullName} {driver.name_acronym ? `(${driver.name_acronym})` : ""}
+  const renderSelectors = () => (
+    <div className="telemetry-selectors-container"> {/* New wrapper for both selectors */}
+      <div className="driver-selector">
+        <label htmlFor="driver-telemetry-select">Select Driver:</label>
+        <select
+          id="driver-telemetry-select"
+          value={selectedDriver || ""}
+          onChange={(e) => {
+            const driverNum = e.target.value ? parseInt(e.target.value) : null;
+            setSelectedDriver(driverNum);
+            // Resets for laps and telemetry data are handled by useEffect for selectedDriver
+          }}
+          disabled={!allSessionDrivers || allSessionDrivers.length === 0 || isLoadingLapsList || isLoadingTelemetry || isProcessingChart }
+        >
+          <option value="">-- Select Driver --</option>
+          {allSessionDrivers &&
+            allSessionDrivers.map((driver) => (
+              <option key={`tel-driver-${driver.driver_number}`} value={driver.driver_number}>
+                {driver.fullName} {driver.name_acronym ? `(${driver.name_acronym})` : ""}
+              </option>
+            ))}
+        </select>
+      </div>
+
+      <div className="lap-selector"> {/* New lap selector */}
+        <label htmlFor="lap-telemetry-select">Select Lap:</label>
+        <select
+          id="lap-telemetry-select"
+          value={selectedLap || ""}
+          onChange={(e) => {
+            setSelectedLap(e.target.value ? parseInt(e.target.value) : null);
+            setIndividualChartsData(null); // Clear charts when lap changes
+            setError(""); // Clear main error when user makes a new lap selection
+          }}
+          disabled={!selectedDriver || isLoadingLapsList || driverLaps.length === 0 || isLoadingTelemetry || isProcessingChart}
+        >
+          <option value="">-- Select Lap --</option>
+          {driverLaps.map((lap) => (
+            <option key={`tel-lap-${lap.lap_number}`} value={lap.lap_number}>
+              Lap {lap.lap_number} (Duration: {lap.lap_duration ? lap.lap_duration.toFixed(3) : 'N/A'})
             </option>
           ))}
-      </select>
+        </select>
+      </div>
     </div>
   );
 
@@ -262,42 +347,50 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
   return (
     <div className="driver-telemetry-chart-container">
       <h3>
-        Driver Telemetry: {selectedRace.meeting_name} ({selectedRace.year})
+        Driver Telemetry for Lap: {selectedRace.meeting_name} ({selectedRace.year})
       </h3>
-      {(!allSessionDrivers || allSessionDrivers.length === 0) && !isLoadingTelemetry && (
-        <p className="chart-placeholder">Driver list not available, cannot render selector.</p>
+      {(!allSessionDrivers || allSessionDrivers.length === 0) && !isLoadingLapsList && !isLoadingTelemetry && (
+        <p className="chart-placeholder">Driver list not available for this session.</p>
       )}
-      {allSessionDrivers && allSessionDrivers.length > 0 && renderDriverSelector()}
+      {allSessionDrivers && allSessionDrivers.length > 0 && renderSelectors()} {/* Changed to renderSelectors */}
 
-      {isLoadingTelemetry && <div className="loading-message"><p>Loading telemetry data...</p></div>}
-      {isProcessingChart && !isLoadingTelemetry && <div className="loading-message"><p>Processing chart data...</p></div>}
+      {isLoadingLapsList && <div className="loading-message"><p>Loading laps for driver...</p></div>}
+      {lapsError && !isLoadingLapsList && <div className="error-message"><p>{lapsError}</p></div>}
+
+      {selectedDriver && !isLoadingLapsList && driverLaps.length === 0 && !lapsError && (
+        <div className="chart-placeholder"><p>No laps found for the selected driver in this session.</p></div>
+      )}
+
+      {selectedDriver && driverLaps.length > 0 && !selectedLap && !isLoadingLapsList && !isLoadingTelemetry && (
+        <div className="chart-placeholder"><p>Please select a lap to view telemetry.</p></div>
+      )}
+
+      {isLoadingTelemetry && <div className="loading-message"><p>Loading telemetry data for lap...</p></div>}
+      {isProcessingChart && !isLoadingTelemetry && <div className="loading-message"><p>Processing lap telemetry data...</p></div>}
       {error && !isLoadingTelemetry && !isProcessingChart && <div className="error-message"><p>{error}</p></div>}
 
-      {!isLoadingTelemetry && !isProcessingChart && !error && (!telemetryData || telemetryData.length === 0) && selectedDriver && (
-          <div className="chart-placeholder"><p>No telemetry data points found for the selected driver.</p></div>
+      {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && selectedLap && (!telemetryData || telemetryData.length === 0) && (
+          <div className="chart-placeholder"><p>No telemetry data points found for the selected driver and lap.</p></div>
       )}
 
-      {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && individualChartsData && (
+      {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && selectedLap && individualChartsData && (
         <div className="telemetry-charts-grid">
           {chartConfigs.map(config => (
             <div key={config.key} className="telemetry-chart-item">
-              {/* The h4 title is now part of the chart options `plugins.title.text` */}
-              {/* <h4>{config.title}</h4> */}
               {individualChartsData[config.key] ? (
                 <Line data={individualChartsData[config.key].data} options={individualChartsData[config.key].options} />
               ) : (
-                <p>Data for {config.title} not available.</p>
+                // This case might indicate an issue during processing for a specific chart type
+                <p>Chart data for {config.title} unavailable.</p>
               )}
             </div>
           ))}
         </div>
       )}
 
-      {!isLoadingTelemetry && !isProcessingChart && !error && !selectedDriver && allSessionDrivers && allSessionDrivers.length > 0 && (
-          <div className="chart-placeholder"><p>Select a driver to view their telemetry.</p></div>
-      )}
-       {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && !individualChartsData && telemetryData && telemetryData.length > 0 && (
-          <div className="chart-placeholder"><p>Could not process telemetry data into charts.</p></div>
+      {/* Fallback for initial state or if driver not selected */}
+      {!selectedDriver && allSessionDrivers && allSessionDrivers.length > 0 && !isLoadingLapsList && !isLoadingTelemetry && (
+          <div className="chart-placeholder"><p>Select a driver to load their laps and view telemetry.</p></div>
       )}
     </div>
   );
