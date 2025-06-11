@@ -680,42 +680,29 @@ a:hover {
 
 /* Styles for the 6-chart telemetry layout */
 .telemetry-charts-grid {
-  display: grid;
-  grid-template-columns: 1fr; /* 1 column by default for small screens */
-  gap: 1.5em; /* Spacing between charts */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em; /* Spacing between charts, still works for flex column */
   margin-top: 1.5em;
 }
 
 .telemetry-chart-item {
-  background-color: var(--color-bg-primary); /* Slightly different background for each chart item for distinction */
+  background-color: var(--color-bg-primary);
   padding: 1em;
   border-radius: 6px;
   border: 1px solid var(--color-border);
-  /* height: 300px; */ /* Fixed height for each chart item, or use aspect-ratio */
-  /* Child canvas will fill this. Chart.js options should have maintainAspectRatio: false */
+  min-height: 320px; /* Increased height for each chart item */
+  display: flex; /* Optional: if you want canvas to flex-grow within item */
+  flex-direction: column; /* Optional: if you want canvas to flex-grow */
 }
 
 .telemetry-chart-item canvas {
-  max-height: 250px; /* Or adjust based on .telemetry-chart-item padding and desired title space */
-  width: 100% !important; /* Ensure canvas respects container width */
+  max-height: 280px; /* Adjusted canvas height, leaving space for title/padding */
+  width: 100% !important;
+  flex-grow: 1; /* Optional: if using flex on parent .telemetry-chart-item */
 }
 
-
-/* Responsive adjustments for the grid */
-@media (min-width: 768px) { /* Medium screens - 2 columns */
-  .telemetry-charts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1200px) { /* Large screens - 3 columns */
-  .telemetry-charts-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  .telemetry-chart-item canvas {
-    max-height: 220px; /* Adjust canvas height for 3 columns if needed */
-  }
-}
+/* Media queries for grid-template-columns are removed as layout is now single column flex. */
 
 /* Ensure the main section for telemetry charts has some padding */
 .driver-telemetry-chart-section {

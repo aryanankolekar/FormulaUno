@@ -195,7 +195,7 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
         // Calculate X-axis labels: time in seconds from lap start
         const labels = telemetryData.map(d => (new Date(d.date).getTime() - lapStartTimeMillis) / 1000);
 
-        const createChartConfig = (telemetryKey, yAxisTitle, color, yAxisOptions = {}, isStepped = false) => {
+        const createChartConfig = (telemetryKey, yAxisTitle, color, yAxisOptions = {}, isStepped = false, isLastChart = false) => {
           // Ensure n_gear is mapped to gear if that's the field name from API
           const actualTelemetryKey = telemetryKey === 'gear' && telemetryData[0] && typeof telemetryData[0].n_gear !== 'undefined' ? 'n_gear' : telemetryKey;
           const dataValues = telemetryData.map(d => d[actualTelemetryKey]);
@@ -222,8 +222,19 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
             options: {
               ...baseChartOptions,
               scales: {
-                ...baseChartOptions.scales,
-                y: {
+                ...baseChartOptions.scales, // Spread existing scales (like y if defined in base)
+                x: { // Override X-axis specifically
+                  ...baseChartOptions.scales.x, // Keep base settings like grid color for X
+                  title: {
+                    ...baseChartOptions.scales.x.title,
+                    display: isLastChart, // Only display title if it's the last chart
+                  },
+                  ticks: {
+                    ...baseChartOptions.scales.x.ticks,
+                    display: isLastChart, // Only display ticks if it's the last chart
+                  },
+                },
+                y: { // Y-axis configuration remains specific to each chart
                   title: { display: true, text: yAxisTitle, color: "var(--color-text-secondary)" },
                   ticks: { color: "var(--color-text-secondary)", ...yAxisOptions.ticks },
                   grid: { color: "var(--color-border)" },
@@ -250,14 +261,29 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           };
         };
 
-        setIndividualChartsData({
-          speed: createChartConfig('speed', 'Speed (km/h)', 'var(--color-accent-red)'),
-          throttle: createChartConfig('throttle', 'Throttle (%)', 'green', { min: 0, max: 1, ticks: { stepSize: 0.1 } }),
-          brake: createChartConfig('brake', 'Brake (0=Off, 1=On)', 'blue', { min: 0, max: 1, ticks: { stepSize: 1 } }),
-          rpm: createChartConfig('rpm', 'RPM', 'var(--color-accent-purple)'),
-          gear: createChartConfig('gear', 'Gear', 'orange', { min: 0, max: 8, ticks: { stepSize: 1 } }, true /* isStepped */),
-          drs: createChartConfig('drs', 'DRS (0=Off, 1..12=On)', 'cyan', { min: 0, max: 12, ticks: { stepSize: 1 } }),
+        // Define the order and properties of charts
+        const orderedChartConfigs = [
+          { key: 'speed', yAxisLabel: 'Speed (km/h)', color: 'var(--color-accent-red)', yAxisOptions: {}, isStepped: false },
+          { key: 'throttle', yAxisLabel: 'Throttle (%)', color: 'green', yAxisOptions: { min: 0, max: 1, ticks: { stepSize: 0.1 } }, isStepped: false },
+          { key: 'brake', yAxisLabel: 'Brake (0=Off, 1=On)', color: 'blue', yAxisOptions: { min: 0, max: 1, ticks: { stepSize: 1 } }, isStepped: false },
+          { key: 'rpm', yAxisLabel: 'RPM', color: 'var(--color-accent-purple)', yAxisOptions: {}, isStepped: false },
+          { key: 'gear', yAxisLabel: 'Gear', color: 'orange', yAxisOptions: { min: 0, max: 8, ticks: { stepSize: 1 } }, isStepped: true },
+          { key: 'drs', yAxisLabel: 'DRS (0=Off, 1..12=On)', color: 'cyan', yAxisOptions: { min: 0, max: 12, ticks: { stepSize: 1 } }, isStepped: false },
+        ];
+
+        const charts = {};
+        orderedChartConfigs.forEach((config, index) => {
+          const isLast = index === orderedChartConfigs.length - 1;
+          charts[config.key] = createChartConfig(
+            config.key,
+            config.yAxisLabel,
+            config.color,
+            config.yAxisOptions,
+            config.isStepped,
+            isLast // Pass isLastChart argument
+          );
         });
+        setIndividualChartsData(charts);
 
       } catch (e) {
         console.error("Error processing chart data for lap:", e);
