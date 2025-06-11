@@ -749,4 +749,103 @@ a:hover {
     margin-top: 0; /* Reset margin if it was for the old layout */
 }
 
-[end of frontend/src/index.css]
+/* Styles for RaceList.jsx Grid and Cards */
+.race-list-section {
+  padding: 1em 0;
+  width: 100%; /* Ensure section tries to take full available width */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.race-list-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* Default to 3 columns */
+  gap: 1.5em; /* Spacing between cards */
+  width: 100%; /* Explicitly set width */
+  box-sizing: border-box;
+  min-width: 0; /* Flexbox/grid item shrink fix */
+  /* border: 1px dotted green; */
+}
+
+.race-list-item-card {
+  background-color: var(--color-bg-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1em;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for card effect */
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  min-width: 0; /* Flexbox/grid item shrink fix */
+  /* border: 1px dotted purple; */
+}
+
+.race-list-item-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.circuit-layout-image {
+  width: 100%; /* Make image responsive within card padding */
+  max-height: 180px; /* Max height for the image */
+  aspect-ratio: 16/10; /* Common aspect ratio for track maps, adjust as needed */
+  object-fit: contain; /* Or 'cover', depending on desired look and image consistency */
+  margin-bottom: 1em;
+  background-color: var(--color-bg-secondary); /* Placeholder background if image is transparent or loading */
+  border-radius: 4px;
+}
+
+.circuit-image-placeholder {
+  width: 100%;
+  height: 180px; /* Match image max-height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  border-radius: 4px;
+  margin-bottom: 1em;
+}
+
+.race-card-details {
+  flex-grow: 1; /* Allows this section to take up space, pushing button down */
+  margin-bottom: 1em; /* Space before the button */
+}
+
+.race-card-details h4 { /* Targets .race-card-name */
+  font-size: 1.1em;
+  color: var(--color-accent-red); /* Use accent for the race name */
+  margin-top: 0;
+  margin-bottom: 0.5em;
+}
+
+.race-card-details p {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.3em;
+  line-height: 1.4;
+}
+.race-card-details .race-card-circuit strong { /* If circuit short name is bolded */
+    color: var(--color-text-primary);
+}
+
+
+.race-card-button {
+  /* Uses global button styles, but can add specifics */
+  padding: 0.6em 1em; /* Adjust padding for card context */
+  align-self: flex-start; /* Button doesn't stretch full width */
+  /* Or width: 100%; for full-width button */
+}
+
+/* Responsive adjustments for the grid */
+@media (max-width: 992px) { /* Medium screens - 2 columns */
+  .race-list-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) { /* Small screens - 1 column */
+  .race-list-grid-container {
+    grid-template-columns: 1fr;
+  }
+}

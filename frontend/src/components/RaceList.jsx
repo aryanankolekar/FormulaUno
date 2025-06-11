@@ -157,31 +157,28 @@ function RaceList({ season, onRaceSelect }) {
           const fullCircuitName = circuitInfo?.name || race.circuit_short_name; // Used for alt text and potentially for image URL construction if different from short_name
           const circuitDisplayName = circuitInfo?.short_name || race.circuit_short_name;
           const countryDisplay = circuitInfo?.country_code || 'N/A'; // Assuming country_code is available on circuitInfo
-          // Use circuitInfo.name for reliable SVG mapping if it's the official name used in the SVG repo
-          const svgName = circuitInfo?.name || ''; // Use the full official name for the SVG if available
-          const imageUrl = svgName
-            ? `https://raw.githubusercontent.com/Formula1Dev/Formula1-Track-Maps-SVG/main/tracks/${encodeURIComponent(svgName)}.svg`
-            : ''; // No image if no reliable name for SVG
+
+          // New image URL construction for local SVGs
+          const imageUrl = `/circuits/${race.circuit_key}.svg`;
+          const altText = circuitInfo ? `Circuit layout for ${circuitInfo.name}` : `Circuit layout for ${race.circuit_short_name}`;
 
           return (
             <div key={race.session_key} className="race-list-item-card">
-              {imageUrl ? (
-                <img
-                  src={imageUrl}
-                  alt={`Circuit layout for ${fullCircuitName}`}
-                  className="circuit-layout-image"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    const placeholder = e.target.nextSibling;
-                    if (placeholder && placeholder.classList.contains('circuit-image-placeholder')) {
-                      placeholder.style.display = 'flex';
-                    }
-                  }}
-                />
-              ) : null}
+              <img
+                src={imageUrl}
+                alt={altText}
+                className="circuit-layout-image"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  const placeholder = e.target.nextSibling;
+                  if (placeholder && placeholder.classList.contains('circuit-image-placeholder')) {
+                    placeholder.style.display = 'flex';
+                  }
+                }}
+              />
               <div
                 className="circuit-image-placeholder"
-                style={{ display: imageUrl ? 'none' : 'flex' }} // Show if no imageUrl, or if onError triggers for valid imageUrl
+                style={{ display: 'none' }} // Initially hidden, shown by onError
               >
                 No Image Available
               </div>
