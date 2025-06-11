@@ -154,29 +154,31 @@ function RaceResults({ selectedRace }) {
         const currentDriverPosition = finalPositions.get(driverNumber); // Can be number or 'N/C'
         const currentDriverLaps = driverLapInfoMap.get(driverNumber) || 0;
 
-        let intervalOrGap = "N/A";
+        const lastPositionData = latestPositionsByDriver.get(driverNumber);
+        let intervalOrGap = "N/A"; // Default
 
         if (currentDriverPosition === 1) {
           intervalOrGap = "Finished";
-        } else if (typeof currentDriverPosition === 'number' && winnerLapsCompleted > 0) {
-          if (currentDriverLaps === winnerLapsCompleted) {
-            intervalOrGap = ""; // Same lap as winner, but not the winner
+        } else if (lastPositionData && typeof currentDriverPosition === 'number') {
+          if (currentDriverLaps === winnerLapsCompleted && lastPositionData.gap_to_leader_seconds !== undefined && lastPositionData.gap_to_leader_seconds !== null) {
+            // On the same lap as the winner, show time gap
+            intervalOrGap = `+${parseFloat(lastPositionData.gap_to_leader_seconds).toFixed(3)}s`;
           } else if (currentDriverLaps > 0 && currentDriverLaps < winnerLapsCompleted) {
+            // Laps down
             const lapsDown = winnerLapsCompleted - currentDriverLaps;
             intervalOrGap = `+${lapsDown} Lap${lapsDown > 1 ? 's' : ''}`;
-          } else {
-            if (currentDriverLaps === 0) {
-                intervalOrGap = "DNF";
-            } else {
-                intervalOrGap = "N/A"; // Anomaly or other specific scenario
-            }
-          }
-        } else if (currentDriverPosition === 'N/C') {
-          intervalOrGap = "DNF";
-        }
-
-        if (currentDriverLaps === 0 && currentDriverPosition !== 1 && typeof currentDriverPosition === 'number') {
+          } else if (currentDriverLaps === 0 ) {
              intervalOrGap = "DNF";
+          } else {
+             // Other cases, e.g. did not start but has position, or other anomalies
+             intervalOrGap = "N/A";
+          }
+        } else if (currentDriverPosition === 'N/C') { // Not classified
+          intervalOrGap = "DNF"; // Or "N/C" if preferred
+        }
+        // Ensure DNF if laps are 0 but somehow got a numeric position (should be caught by N/C)
+        if (currentDriverLaps === 0 && typeof currentDriverPosition === 'number' && currentDriverPosition !== 1) {
+            intervalOrGap = "DNF";
         }
 
 
@@ -275,11 +277,21 @@ function RaceResults({ selectedRace }) {
                   <td className="col-pos">{result.position}</td>
                   <td
                     className="col-driver driver-cell"
-                    style={{ '--team-color': result.teamColour }}
+                    style={{ '--team-color': result.teamColour }} // Keep this if .driver-cell uses it for a border
                   >
-                    <div className="driver-info">
+                    <div className="driver-info-wrapper"> {/* New wrapper for flex layout */}
+                      <span className="team-color-strip" style={{ backgroundColor: result.teamColour }}></span>
+                      {result.countryCode && (
+                        <img
+                          src={`https://flagcdn.com/w20/${result.countryCode.toLowerCase()}.png`}
+                          alt={`${result.countryCode} flag`}
+                          className="driver-country-flag"
+                          title={result.countryCode} // Show country code on hover
+                        />
+                      )}
                       <span className="driver-name">{result.fullName}</span>
-                      {result.countryCode && <span className="driver-country">({result.countryCode})</span>}
+                      {/* Country code text can be removed if flag is present, or kept: */}
+                      {/* <span className="driver-country">({result.countryCode})</span> */}
                     </div>
                   </td>
                   <td className="col-team">{result.teamName}</td>
