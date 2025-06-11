@@ -25,7 +25,7 @@ ChartJS.register(
   Legend
 );
 
-// Base Chart Options (can be dynamically updated)
+// Base Chart Options (simplified, specific y-axis details will be per chart)
 const baseChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -33,37 +33,32 @@ const baseChartOptions = {
     x: {
       title: {
         display: true,
-        text: "Time", // Or Lap Number, depending on telemetry data
+        text: "Time (s)", // Standardized X-axis title
         color: "var(--color-text-secondary)",
       },
       ticks: { color: "var(--color-text-secondary)" },
       grid: { color: "var(--color-border)" },
     },
-    y: {
-      title: {
-        display: true,
-        text: "Value", // This will be overridden by specific telemetry data types
-        color: "var(--color-text-secondary)",
-      },
-      ticks: { color: "var(--color-text-secondary)" },
-      grid: { color: "var(--color-border)" },
-    },
+    // Y-axis will be defined per chart
   },
   plugins: {
-    legend: { position: "top", labels: { color: "var(--color-text-primary)" } },
-    title: {
+    legend: {
+      position: "top",
+      labels: { color: "var(--color-text-primary)" },
+      // display: false, // Individual legends might be too much, consider removing if chart titles are clear
+    },
+    title: { // This title is for the chart itself, will be overridden
       display: true,
-      text: "Driver Telemetry",
       color: "var(--color-text-primary)",
-      font: { size: 16 },
+      font: { size: 14 }, // Slightly smaller for individual charts
     },
   },
 };
 
 // Component accepts allSessionDrivers as a prop
 function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
-  const [chartData, setChartData] = useState(null);
-  const [telemetryData, setTelemetryData] = useState(null);
+  const [individualChartsData, setIndividualChartsData] = useState(null); // Renamed from chartData
+  const [telemetryData, setTelemetryData] = useState(null); // Raw telemetry
   const [isLoadingTelemetry, setIsLoadingTelemetry] = useState(false);
   const [isProcessingChart, setIsProcessingChart] = useState(false);
   const [error, setError] = useState("");
@@ -72,7 +67,7 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
   // Effect 1: Reset selections and data when the race or drivers prop changes
   useEffect(() => {
     setSelectedDriver(null);
-    setChartData(null);
+    setIndividualChartsData(null); // Reset new state
     setTelemetryData(null);
     setError("");
     setIsLoadingTelemetry(false);
@@ -86,38 +81,36 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
       setIsProcessingChart(false);
       setError("");
       setTelemetryData(null);
-      setChartData(null);
+      setIndividualChartsData(null); // Reset new state
 
       // TODO: Replace with actual telemetry API endpoint and parameters
-      // Example: /telemetry?session_key={session_key}&driver_number={driver_number}
+      // Example: /telemetry?session_key={session_key}&driver_number={driver_number}&fields=time,speed,rpm,throttle,brake,gear,drs
       // The structure of the response data will determine how it's processed.
-      // For now, we'll simulate a delay and set some mock data.
       setTimeout(() => {
-        // MOCK DATA - Replace with actual API call
+        // MOCK DATA - Updated with gear and drs
         const mockData = [
-          { time: 0, speed: 0, rpm: 800, throttle: 0, brake: 1 },
-          { time: 1, speed: 50, rpm: 2000, throttle: 0.5, brake: 0 },
-          { time: 2, speed: 100, rpm: 3000, throttle: 1, brake: 0 },
-          { time: 3, speed: 150, rpm: 4000, throttle: 1, brake: 0 },
-          { time: 4, speed: 100, rpm: 3000, throttle: 0.5, brake: 1 },
-          { time: 5, speed: 50, rpm: 2000, throttle: 0, brake: 1 },
+          { time: 0, speed: 0, rpm: 800, throttle: 0, brake: 1, gear: 1, drs: 0 },
+          { time: 1, speed: 50, rpm: 2000, throttle: 0.5, brake: 0, gear: 2, drs: 0 },
+          { time: 2, speed: 100, rpm: 3000, throttle: 1, brake: 0, gear: 3, drs: 1 },
+          { time: 3, speed: 150, rpm: 4000, throttle: 1, brake: 0, gear: 4, drs: 1 },
+          { time: 4, speed: 120, rpm: 3500, throttle: 0.7, brake: 0, gear: 4, drs: 0 },
+          { time: 5, speed: 80, rpm: 2500, throttle: 0.2, brake: 1, gear: 3, drs: 0 },
         ];
         setTelemetryData(mockData);
         setIsLoadingTelemetry(false);
       }, 1000);
 
-
-      // Example using axios:
+      // Example using axios (ensure to request all necessary fields):
       // axios
       //   .get(
-      //     `${OPENF1_BASE_URL}/telemetry?session_key=${selectedRace.session_key}&driver_number=${selectedDriver}`
+      //     `${OPENF1_BASE_URL}/telemetry?session_key=${selectedRace.session_key}&driver_number=${selectedDriver}&fields=time,speed,rpm,throttle,brake,gear,drs`
       //   )
       //   .then((response) => {
       //     if (Array.isArray(response.data)) {
       //       setTelemetryData(response.data);
       //     } else {
       //       console.error("Telemetry data is not an array:", response.data);
-      //       setTelemetryData([]);
+      //       setTelemetryData([]); // Set to empty array to prevent errors in processing
       //       setError("Failed to load telemetry data: Unexpected format.");
       //     }
       //     setIsLoadingTelemetry(false);
@@ -133,88 +126,98 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
       //   });
     } else {
       setTelemetryData(null);
-      setChartData(null);
+      setIndividualChartsData(null); // Reset new state
       setIsLoadingTelemetry(false);
       setIsProcessingChart(false);
       setError("");
     }
   }, [selectedRace?.session_key, selectedDriver]);
 
-  // Effect 3: Process telemetry data into chartData
+  // Effect 3: Process telemetryData into individualChartsData for six charts
   useEffect(() => {
     if (telemetryData && telemetryData.length > 0 && allSessionDrivers && allSessionDrivers.length > 0 && selectedDriver) {
       setIsProcessingChart(true);
       setError("");
+      setIndividualChartsData(null); // Clear previous multi-chart data
 
       try {
         const driverInfo = allSessionDrivers.find(d => d.driver_number === selectedDriver);
-        const driverName = driverInfo?.name_acronym || `Driver ${selectedDriver}`;
+        const driverNameAcronym = driverInfo?.name_acronym || `Driver ${selectedDriver}`;
+        const labels = telemetryData.map(d => d.time); // Common X-axis labels (time)
 
-        // TODO: Adapt this based on the actual telemetry data structure
-        // This example assumes telemetryData is an array of objects with time, speed, rpm, throttle, brake
-        const labels = telemetryData.map(d => d.time); // Or d.lap_number, d.timestamp, etc.
+        const createChartConfig = (telemetryKey, yAxisTitle, color, yAxisOptions = {}) => {
+          const dataValues = telemetryData.map(d => d[telemetryKey]);
+          return {
+            data: {
+              labels: labels,
+              datasets: [{
+                label: `${yAxisTitle} (${driverNameAcronym})`,
+                data: dataValues,
+                borderColor: color,
+                backgroundColor: `${color}80`, // Add some transparency
+                tension: 0.2,
+                fill: false,
+                pointRadius: 2, // Smaller points for dense data
+              }],
+            },
+            options: {
+              ...baseChartOptions,
+              scales: {
+                ...baseChartOptions.scales,
+                y: {
+                  title: { display: true, text: yAxisTitle, color: "var(--color-text-secondary)" },
+                  ticks: { color: "var(--color-text-secondary)", ...yAxisOptions.ticks },
+                  grid: { color: "var(--color-border)" },
+                  min: yAxisOptions.min,
+                  max: yAxisOptions.max,
+                },
+              },
+              plugins: {
+                ...baseChartOptions.plugins,
+                title: {
+                  ...baseChartOptions.plugins.title,
+                  text: `${yAxisTitle} - ${driverNameAcronym}`,
+                },
+                legend: { // Keep legend for individual charts, but simplify label
+                    position: "top",
+                    labels: {
+                        color: "var(--color-text-primary)",
+                        boxWidth: 10, // Smaller legend box
+                        font: { size: 10 } // Smaller font for legend
+                    }
+                },
+              },
+            },
+          };
+        };
 
-        const speedData = telemetryData.map(d => d.speed);
-        const rpmData = telemetryData.map(d => d.rpm);
-        const throttleData = telemetryData.map(d => d.throttle);
-        const brakeData = telemetryData.map(d => d.brake);
-
-        setChartData({
-          labels: labels,
-          datasets: [
-            {
-              label: `Speed (${driverName})`,
-              data: speedData,
-              borderColor: "var(--color-accent-red)",
-              backgroundColor: "var(--color-accent-red)80",
-              yAxisID: 'y-speed', // Assign to a specific Y axis
-              tension: 0.2,
-              fill: false,
-            },
-            {
-              label: `RPM (${driverName})`,
-              data: rpmData,
-              borderColor: "var(--color-accent-purple)",
-              backgroundColor: "var(--color-accent-purple)80",
-              yAxisID: 'y-rpm', // Assign to a specific Y axis
-              tension: 0.2,
-              fill: false,
-            },
-            {
-              label: `Throttle (${driverName})`,
-              data: throttleData,
-              borderColor: "green", // Example color
-              backgroundColor: "green80",
-              yAxisID: 'y-throttle-brake', // Assign to a specific Y axis
-              tension: 0.2,
-              fill: false,
-            },
-            {
-              label: `Brake (${driverName})`,
-              data: brakeData,
-              borderColor: "blue", // Example color
-              backgroundColor: "blue80",
-              yAxisID: 'y-throttle-brake', // Assign to a specific Y axis
-              tension: 0.2,
-              fill: false,
-            },
-          ],
+        setIndividualChartsData({
+          speed: createChartConfig('speed', 'Speed (km/h)', 'var(--color-accent-red)'),
+          throttle: createChartConfig('throttle', 'Throttle (%)', 'green', { min: 0, max: 1, ticks: { stepSize: 0.1 } }),
+          brake: createChartConfig('brake', 'Brake (0=Off, 1=On)', 'blue', { min: 0, max: 1, ticks: { stepSize: 1 } }),
+          rpm: createChartConfig('rpm', 'RPM', 'var(--color-accent-purple)'),
+          gear: createChartConfig('gear', 'Gear', 'orange', { min: 0, max: 8, ticks: { stepSize: 1 } }), // Assuming gear 0 for Neutral/Error
+          drs: createChartConfig('drs', 'DRS (0=Off, 1..12=On)', 'cyan', { min: 0, max: 12, ticks: { stepSize: 1 } }), // DRS can have multiple zones/values in OpenF1
         });
+
       } catch (e) {
         console.error("Error processing chart data:", e);
-        setError("Failed to process data for the telemetry chart.");
-        setChartData(null);
+        setError("Failed to process data for telemetry charts.");
+        setIndividualChartsData(null);
       } finally {
         setIsProcessingChart(false);
       }
     } else {
-      setChartData(null);
-      if (selectedDriver && (!allSessionDrivers || allSessionDrivers.length === 0)) {
+      setIndividualChartsData(null);
+      if (selectedDriver && telemetryData && telemetryData.length === 0) {
+        setError("No telemetry data points available for this driver/session.");
+      } else if (selectedDriver && (!allSessionDrivers || allSessionDrivers.length === 0)) {
         setError("Driver details are not available to process the chart.");
       }
       setIsProcessingChart(false);
     }
   }, [selectedDriver, telemetryData, allSessionDrivers]);
+
 
   if (!selectedRace || !selectedRace.session_key) {
     return (
@@ -226,20 +229,20 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
 
   const renderDriverSelector = () => (
     <div className="driver-selector">
-      <label htmlFor="driver-select">Select Driver:</label>
+      <label htmlFor="driver-telemetry-select">Select Driver:</label>
       <select
-        id="driver-select"
+        id="driver-telemetry-select"
         value={selectedDriver || ""}
         onChange={(e) => {
           setSelectedDriver(e.target.value ? parseInt(e.target.value) : null);
-          setChartData(null); // Clear chart when driver changes
+          setIndividualChartsData(null); // Clear charts when driver changes
         }}
         disabled={!allSessionDrivers || allSessionDrivers.length === 0 || isLoadingTelemetry || isProcessingChart}
       >
         <option value="">-- Select Driver --</option>
         {allSessionDrivers &&
           allSessionDrivers.map((driver) => (
-            <option key={`tel-${driver.driver_number}`} value={driver.driver_number}>
+            <option key={`tel-chart-${driver.driver_number}`} value={driver.driver_number}>
               {driver.fullName} {driver.name_acronym ? `(${driver.name_acronym})` : ""}
             </option>
           ))}
@@ -247,49 +250,14 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
     </div>
   );
 
-  // Dynamic options to handle multiple Y axes if needed
-  const currentChartOptions = {
-    ...baseChartOptions,
-    scales: {
-        ...baseChartOptions.scales,
-        'y-speed': { // Axis for Speed
-            type: 'linear',
-            display: true,
-            position: 'left',
-            title: { display: true, text: 'Speed (km/h)', color: 'var(--color-text-secondary)'},
-            ticks: { color: 'var(--color-text-secondary)'},
-            grid: { drawOnChartArea: false }, // Only draw grid for the main Y axis to avoid clutter
-        },
-        'y-rpm': { // Axis for RPM
-            type: 'linear',
-            display: true,
-            position: 'right',
-            title: { display: true, text: 'RPM', color: 'var(--color-text-secondary)'},
-            ticks: { color: 'var(--color-text-secondary)'},
-            grid: { drawOnChartArea: false },
-        },
-        'y-throttle-brake': { // Axis for Throttle/Brake (0-1 range)
-            type: 'linear',
-            display: true,
-            position: 'right', // Or another position
-            min: 0,
-            max: 1,
-            title: { display: true, text: 'Throttle / Brake', color: 'var(--color-text-secondary)'},
-            ticks: { color: 'var(--color-text-secondary)', stepSize: 0.1 },
-            grid: { color: "var(--color-border)" }, // Main grid
-        }
-    },
-    plugins: {
-      ...baseChartOptions.plugins,
-      title: {
-        ...baseChartOptions.plugins.title,
-        text: selectedDriver && allSessionDrivers && allSessionDrivers.length > 0
-            ? `Telemetry: ${allSessionDrivers.find(d => d.driver_number === selectedDriver)?.name_acronym || 'Selected Driver'}`
-            : "Driver Telemetry",
-      },
-    },
-  };
-
+  const chartConfigs = [
+    { key: 'speed', title: 'Speed' },
+    { key: 'throttle', title: 'Throttle' },
+    { key: 'brake', title: 'Brake' },
+    { key: 'rpm', title: 'RPM' },
+    { key: 'gear', title: 'Gear' },
+    { key: 'drs', title: 'DRS' },
+  ];
 
   return (
     <div className="driver-telemetry-chart-container">
@@ -306,17 +274,30 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
       {error && !isLoadingTelemetry && !isProcessingChart && <div className="error-message"><p>{error}</p></div>}
 
       {!isLoadingTelemetry && !isProcessingChart && !error && (!telemetryData || telemetryData.length === 0) && selectedDriver && (
-          <div className="chart-placeholder"><p>No telemetry data available for the selected driver or an error occurred.</p></div>
+          <div className="chart-placeholder"><p>No telemetry data points found for the selected driver.</p></div>
       )}
 
-      {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && chartData && (
-        <div className="driver-telemetry-chart-area">
-          <Line data={chartData} options={currentChartOptions} />
+      {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && individualChartsData && (
+        <div className="telemetry-charts-grid">
+          {chartConfigs.map(config => (
+            <div key={config.key} className="telemetry-chart-item">
+              {/* The h4 title is now part of the chart options `plugins.title.text` */}
+              {/* <h4>{config.title}</h4> */}
+              {individualChartsData[config.key] ? (
+                <Line data={individualChartsData[config.key].data} options={individualChartsData[config.key].options} />
+              ) : (
+                <p>Data for {config.title} not available.</p>
+              )}
+            </div>
+          ))}
         </div>
       )}
 
       {!isLoadingTelemetry && !isProcessingChart && !error && !selectedDriver && allSessionDrivers && allSessionDrivers.length > 0 && (
-          <div className="chart-placeholder"><p>Telemetry data loaded. Select a driver to view their telemetry.</p></div>
+          <div className="chart-placeholder"><p>Select a driver to view their telemetry.</p></div>
+      )}
+       {!isLoadingTelemetry && !isProcessingChart && !error && selectedDriver && !individualChartsData && telemetryData && telemetryData.length > 0 && (
+          <div className="chart-placeholder"><p>Could not process telemetry data into charts.</p></div>
       )}
     </div>
   );

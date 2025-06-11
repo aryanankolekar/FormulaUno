@@ -671,3 +671,57 @@ a:hover {
 .driver-telemetry-chart-container .loading-message p {
     color: var(--color-text-secondary); /* Ensure p tag inherits color */
 }
+
+/* Styles for the 6-chart telemetry layout */
+.telemetry-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr; /* 1 column by default for small screens */
+  gap: 1.5em; /* Spacing between charts */
+  margin-top: 1.5em;
+}
+
+.telemetry-chart-item {
+  background-color: var(--color-bg-primary); /* Slightly different background for each chart item for distinction */
+  padding: 1em;
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+  /* height: 300px; */ /* Fixed height for each chart item, or use aspect-ratio */
+  /* Child canvas will fill this. Chart.js options should have maintainAspectRatio: false */
+}
+
+.telemetry-chart-item canvas {
+  max-height: 250px; /* Or adjust based on .telemetry-chart-item padding and desired title space */
+  width: 100% !important; /* Ensure canvas respects container width */
+}
+
+
+/* Responsive adjustments for the grid */
+@media (min-width: 768px) { /* Medium screens - 2 columns */
+  .telemetry-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) { /* Large screens - 3 columns */
+  .telemetry-charts-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .telemetry-chart-item canvas {
+    max-height: 220px; /* Adjust canvas height for 3 columns if needed */
+  }
+}
+
+/* Ensure the main section for telemetry charts has some padding */
+.driver-telemetry-chart-section {
+  /* This class was added in a previous step, ensure its padding is appropriate */
+  padding: 1.5em; /* Or adjust as needed */
+}
+
+/* Remove fixed height from the old single chart area if it conflicts */
+/* .driver-telemetry-chart-area was for the single chart, may not be needed now or should be adapted */
+/* If .driver-telemetry-chart-area is still used as a wrapper *inside* telemetry-chart-item, adjust its height to auto or 100% */
+.driver-telemetry-chart-area {
+    height: 100%; /* Allow it to fill the parent grid item */
+    width: 100%;
+    margin-top: 0; /* Reset margin if it was for the old layout */
+}
