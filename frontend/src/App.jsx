@@ -5,10 +5,12 @@ import RaceResults from "./components/RaceResults";
 import PaceAnalysisChart from "./components/PaceAnalysisChart";
 import DriverGapChart from "./components/DriverGapChart";
 import DriverTelemetryChart from "./components/DriverTelemetryChart";
+import TireStrategyGraph from "./components/TireStrategyGraph"; // Import TireStrategyGraph
 import axios from "axios";
 import { OPENF1_BASE_URL } from "./apiConfig";
 import Navbar from "./components/Navbar";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
+import { useMemo } from "react"; // Import useMemo
 import HomePage from "./pages/HomePage";
 import DriversPage from "./pages/DriversPage";
 import StatsPage from "./pages/StatsPage";
@@ -170,6 +172,27 @@ function App() {
     }
   }, [selectedRace?.session_key]);
 
+  const processedDriversForGraph = useMemo(() => {
+    if (!allSessionDrivers || !raceStintData || !selectedRace) {
+      return [];
+    }
+    return allSessionDrivers.map(driver => {
+      const stintsForDriver = raceStintData
+        .filter(stint => stint.driver_number === driver.driver_number)
+        .map(stint => ({
+          lapStart: stint.lap_start,
+          lapEnd: stint.lap_end,
+          compound: stint.compound,
+        }));
+      return {
+        ...driver, // Includes driver_number, name_acronym, finishingPosition (placeholder), etc.
+        id: driver.driver_number,
+        name: driver.name_acronym || `Driver ${driver.driver_number}`,
+        stints: stintsForDriver,
+      };
+    });
+  }, [allSessionDrivers, raceStintData, selectedRace]);
+
   return (
     <div style={{ background: "var(--f1-bg)", minHeight: "100vh" }}>
       <Navbar onNavigate={handleNav} />
@@ -265,6 +288,12 @@ function App() {
                 >
                   Telemetry
                 </button>
+                <button
+                  onClick={() => setActiveChart("tireStrategy")}
+                  className={activeChart === "tireStrategy" ? "active" : ""}
+                >
+                  Tire Strategy
+                </button>
               </div>
             )}
 
@@ -309,6 +338,25 @@ function App() {
                     <DriverTelemetryChart
                       selectedRace={selectedRace}
                       allSessionDrivers={allSessionDrivers}
+                    />
+                  </section>
+                )}
+              {activeChart === "tireStrategy" &&
+                selectedRace &&
+                allSessionDrivers.length > 0 &&
+                raceStintData && ( // Ensure stint data is loaded
+                  <section
+                    className="tire-strategy-section" // Added a class for potential specific styling
+                    aria-labelledby="tire-strategy-heading"
+                  >
+                    <h4 id="tire-strategy-heading">Tire Strategy Analysis</h4>
+                    {/* Props for TireStrategyGraph will be handled in the next step */}
+                    <TireStrategyGraph
+                      raceData={{
+                        totalLaps: selectedRace.laps_completed || selectedRace.total_laps || 0,
+                        name: selectedRace.meeting_name || selectedRace.race_name || "Race"
+                      }}
+                      driverData={processedDriversForGraph} // This will be defined in the next step
                     />
                   </section>
                 )}

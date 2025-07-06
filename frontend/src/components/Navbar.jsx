@@ -83,15 +83,6 @@ const Navbar = ({ onNavigate }) => {
         >
           Drivers
         </span>
-        <span
-          style={{
-            ...linkStyle,
-            ...(location.pathname === "/stats" ? activeLinkStyle : {}),
-          }}
-          onClick={() => onNavigate("/stats")}
-        >
-          Stats
-        </span>
       </div>
     </nav>
   );
