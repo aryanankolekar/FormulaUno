@@ -33,6 +33,8 @@ function App() {
 
   const [allSessionDrivers, setAllSessionDrivers] = useState([]);
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
+  const [raceStintData, setRaceStintData] = useState(null); // New state for stint data
+  const [isLoadingStints, setIsLoadingStints] = useState(false); // Loading state for stints
 
   const [activeChart, setActiveChart] = useState("pace"); // 'pace', 'gap', 'telemetry'
 
@@ -101,14 +103,25 @@ function App() {
   useEffect(() => {
     if (selectedRace && selectedRace.session_key) {
       setIsLoadingDrivers(true);
+      setIsLoadingStints(true);
       setAllSessionDrivers([]);
+      setRaceStintData(null);
+
+      // Fetch drivers
       axios
         .get(
           `${OPENF1_BASE_URL}/drivers?session_key=${selectedRace.session_key}`
         )
         .then((response) => {
           if (Array.isArray(response.data)) {
-            setAllSessionDrivers(response.data);
+            // TODO: We need finishing positions. Assume for now API provides it or it's part of a later merge.
+            // If not, we might need to fetch /position during the race or /results post-race.
+            // For now, let's add a placeholder if not present.
+            const driversWithPositions = response.data.map((driver, index) => ({
+              ...driver,
+              finishingPosition: driver.finishing_position || index + 1 // Placeholder
+            }));
+            setAllSessionDrivers(driversWithPositions);
           } else {
             console.error(
               "Fetched drivers data is not an array:",
@@ -116,16 +129,44 @@ function App() {
             );
             setAllSessionDrivers([]);
           }
-          setIsLoadingDrivers(false);
         })
         .catch((error) => {
           console.error("Error fetching session drivers:", error);
           setAllSessionDrivers([]);
+        })
+        .finally(() => {
           setIsLoadingDrivers(false);
         });
+
+      // Fetch stints
+      axios
+        .get(
+          `${OPENF1_BASE_URL}/stints?session_key=${selectedRace.session_key}`
+        )
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            setRaceStintData(response.data);
+          } else {
+            console.error(
+              "Fetched stints data is not an array:",
+              response.data
+            );
+            setRaceStintData([]); // Use empty array on error to avoid null issues
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching stint data:", error);
+          setRaceStintData([]); // Use empty array on error
+        })
+        .finally(() => {
+          setIsLoadingStints(false);
+        });
+
     } else {
       setAllSessionDrivers([]);
+      setRaceStintData(null);
       setIsLoadingDrivers(false);
+      setIsLoadingStints(false);
     }
   }, [selectedRace?.session_key]);
 
@@ -163,9 +204,12 @@ function App() {
             element={
               <StatsPage
                 selectedRace={selectedRace}
-                selectedDrivers={selectedDrivers}
-                telemetrySettings={telemetrySettings}
-                setTelemetrySettings={setTelemetrySettings}
+                raceSessionDrivers={allSessionDrivers} // Pass allSessionDrivers instead of selectedDrivers
+                raceStintData={raceStintData}
+                isLoadingDrivers={isLoadingDrivers}
+                isLoadingStints={isLoadingStints}
+                // telemetrySettings={telemetrySettings} // Keep if StatsPage uses it elsewhere
+                // setTelemetrySettings={setTelemetrySettings} // Keep if StatsPage uses it elsewhere
               />
             }
           />
