@@ -37,6 +37,8 @@ function App() {
   const [isLoadingDrivers, setIsLoadingDrivers] = useState(false);
   const [raceStintData, setRaceStintData] = useState(null); // New state for stint data
   const [isLoadingStints, setIsLoadingStints] = useState(false); // Loading state for stints
+  const [raceLapData, setRaceLapData] = useState(null); // New state for lap data
+  const [racePositionData, setRacePositionData] = useState(null); // New state for position data
 
   const [activeChart, setActiveChart] = useState("pace"); // 'pace', 'gap', 'telemetry'
 
@@ -108,6 +110,8 @@ function App() {
       setIsLoadingStints(true);
       setAllSessionDrivers([]);
       setRaceStintData(null);
+      setRaceLapData(null);
+      setRacePositionData(null);
 
       // Fetch drivers
       axios
@@ -116,14 +120,8 @@ function App() {
         )
         .then((response) => {
           if (Array.isArray(response.data)) {
-            // TODO: We need finishing positions. Assume for now API provides it or it's part of a later merge.
-            // If not, we might need to fetch /position during the race or /results post-race.
-            // For now, let's add a placeholder if not present.
-            const driversWithPositions = response.data.map((driver, index) => ({
-              ...driver,
-              finishingPosition: driver.finishing_position || index + 1 // Placeholder
-            }));
-            setAllSessionDrivers(driversWithPositions);
+            // Drivers will get their finishing positions from position data later
+            setAllSessionDrivers(response.data);
           } else {
             console.error(
               "Fetched drivers data is not an array:",
@@ -147,6 +145,12 @@ function App() {
         )
         .then((response) => {
           if (Array.isArray(response.data)) {
+            console.log("Raw stint data from API:", response.data);
+            console.log("Sample stint object:", response.data[0]);
+            console.log(
+              "Available fields in stint:",
+              response.data[0] ? Object.keys(response.data[0]) : []
+            );
             setRaceStintData(response.data);
           } else {
             console.error(
@@ -164,9 +168,55 @@ function App() {
           setIsLoadingStints(false);
         });
 
+      // Fetch laps for total lap count fallback
+      axios
+        .get(
+          `${OPENF1_BASE_URL}/laps?session_key=${selectedRace.session_key}&lap_duration>0`
+        )
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            console.log("Raw lap data from API:", response.data.length, "laps");
+            setRaceLapData(response.data);
+          } else {
+            console.error("Fetched laps data is not an array:", response.data);
+            setRaceLapData([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching lap data:", error);
+          setRaceLapData([]);
+        });
+
+      // Fetch position data for finishing positions
+      axios
+        .get(
+          `${OPENF1_BASE_URL}/position?session_key=${selectedRace.session_key}`
+        )
+        .then((response) => {
+          if (Array.isArray(response.data)) {
+            console.log(
+              "Raw position data from API:",
+              response.data.length,
+              "positions"
+            );
+            setRacePositionData(response.data);
+          } else {
+            console.error(
+              "Fetched position data is not an array:",
+              response.data
+            );
+            setRacePositionData([]);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching position data:", error);
+          setRacePositionData([]);
+        });
     } else {
       setAllSessionDrivers([]);
       setRaceStintData(null);
+      setRaceLapData(null);
+      setRacePositionData(null);
       setIsLoadingDrivers(false);
       setIsLoadingStints(false);
     }
@@ -174,24 +224,108 @@ function App() {
 
   const processedDriversForGraph = useMemo(() => {
     if (!allSessionDrivers || !raceStintData || !selectedRace) {
+      console.log("processedDriversForGraph: Missing required data", {
+        allSessionDrivers: allSessionDrivers?.length,
+        raceStintData: raceStintData?.length,
+        selectedRace: !!selectedRace,
+      });
       return [];
     }
-    return allSessionDrivers.map(driver => {
+
+    console.log("processedDriversForGraph: Processing data", {
+      driversCount: allSessionDrivers.length,
+      stintsCount: raceStintData.length,
+      sampleStint: raceStintData[0],
+    });
+
+    // Calculate actual finishing positions from position data
+    const finalPositions = new Map();
+    if (racePositionData && racePositionData.length > 0) {
+      // Get the latest position for each driver
+      const latestPositionsByDriver = new Map();
+      racePositionData.forEach((p) => {
+        const existing = latestPositionsByDriver.get(p.driver_number);
+        if (!existing || new Date(p.date) > new Date(existing.date)) {
+          latestPositionsByDriver.set(p.driver_number, p);
+        }
+      });
+      latestPositionsByDriver.forEach((p) => {
+        finalPositions.set(p.driver_number, p.position);
+      });
+    }
+
+    // Calculate total laps from stint data
+    const maxLapFromStints = Math.max(
+      ...raceStintData.map((stint) =>
+        parseInt(stint.lap_end || stint.end_lap || 0, 10)
+      ),
+      0
+    );
+    console.log("Total laps from stints:", maxLapFromStints);
+
+    return allSessionDrivers.map((driver) => {
       const stintsForDriver = raceStintData
-        .filter(stint => stint.driver_number === driver.driver_number)
-        .map(stint => ({
-          lapStart: stint.lap_start,
-          lapEnd: stint.lap_end,
+        .filter((stint) => stint.driver_number === driver.driver_number)
+        .map((stint) => ({
+          lapStart: parseInt(stint.lap_start || stint.start_lap || 0, 10),
+          lapEnd: parseInt(stint.lap_end || stint.end_lap || 0, 10),
           compound: stint.compound,
         }));
+
+      // Get actual finishing position or use driver number as fallback
+      const actualFinishingPosition =
+        finalPositions.get(driver.driver_number) || driver.driver_number;
+
+      console.log(
+        `Driver ${driver.driver_number} stints:`,
+        stintsForDriver,
+        `position: ${actualFinishingPosition}`
+      );
+
       return {
-        ...driver, // Includes driver_number, name_acronym, finishingPosition (placeholder), etc.
+        ...driver, // Includes driver_number, name_acronym, etc.
         id: driver.driver_number,
         name: driver.name_acronym || `Driver ${driver.driver_number}`,
+        finishingPosition: actualFinishingPosition, // Use actual finishing position
         stints: stintsForDriver,
       };
     });
-  }, [allSessionDrivers, raceStintData, selectedRace]);
+  }, [allSessionDrivers, raceStintData, racePositionData, selectedRace]);
+
+  // Calculate total laps for the race
+  const raceTotalLaps = useMemo(() => {
+    // First try to get from stint data
+    if (raceStintData && raceStintData.length > 0) {
+      const maxLapFromStints = Math.max(
+        ...raceStintData.map((stint) =>
+          parseInt(stint.lap_end || stint.end_lap || 0, 10)
+        ),
+        0
+      );
+      if (maxLapFromStints > 0) {
+        console.log("Race total laps from stints:", maxLapFromStints);
+        return maxLapFromStints;
+      }
+    }
+
+    // Fallback to lap data
+    if (raceLapData && raceLapData.length > 0) {
+      const maxLapFromLaps = Math.max(
+        ...raceLapData.map((lap) => parseInt(lap.lap_number || 0, 10)),
+        0
+      );
+      if (maxLapFromLaps > 0) {
+        console.log("Race total laps from laps:", maxLapFromLaps);
+        return maxLapFromLaps;
+      }
+    }
+
+    // Final fallback to race object
+    const fallbackLaps =
+      selectedRace?.laps_completed || selectedRace?.total_laps || 0;
+    console.log("Race total laps from race object:", fallbackLaps);
+    return fallbackLaps;
+  }, [raceStintData, raceLapData, selectedRace]);
 
   return (
     <div style={{ background: "var(--f1-bg)", minHeight: "100vh" }}>
@@ -353,8 +487,11 @@ function App() {
                     {/* Props for TireStrategyGraph will be handled in the next step */}
                     <TireStrategyGraph
                       raceData={{
-                        totalLaps: selectedRace.laps_completed || selectedRace.total_laps || 0,
-                        name: selectedRace.meeting_name || selectedRace.race_name || "Race"
+                        totalLaps: raceTotalLaps,
+                        name:
+                          selectedRace.meeting_name ||
+                          selectedRace.race_name ||
+                          "Race",
                       }}
                       driverData={processedDriversForGraph} // This will be defined in the next step
                     />

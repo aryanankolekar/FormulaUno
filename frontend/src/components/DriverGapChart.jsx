@@ -385,48 +385,53 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
     plugins: {
       legend: {
         labels: {
-          color: "#fff",
+          color: "#333",
         },
       },
       title: {
-        color: "#fff",
+        color: "#181818",
       },
     },
     scales: {
       x: {
         grid: {
-          color: "#fff",
+          color: "#eee",
         },
         ticks: {
-          color: "#fff",
+          color: "#555",
         },
       },
       y: {
         grid: {
-          color: "#fff",
+          color: "#eee",
         },
         ticks: {
-          color: "#fff",
+          color: "#555",
         },
       },
     },
-    backgroundColor: "var(--f1-card)",
   };
 
   return (
     <div
       style={{
-        background: "var(--f1-card)",
-        borderRadius: "10px",
-        padding: "1em",
+        padding: "10px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        overflowX: "auto",
       }}
     >
-      <h3>
-        Head-to-Head Lap Gap: {selectedRace.meeting_name} ({selectedRace.year})
-      </h3>
+      <h4
+        style={{ textAlign: "center", color: "#181818", marginBottom: "20px" }}
+      >
+        Driver Gap Analysis: {selectedRace.meeting_name || "Race"}
+      </h4>
       {(!allSessionDrivers || allSessionDrivers.length === 0) &&
         !isLoadingLaps && (
-          <p className="chart-placeholder">
+          <p
+            style={{ color: "#666", textAlign: "center", fontStyle: "italic" }}
+          >
             Driver list not available, cannot render selectors.
           </p>
         )}
@@ -435,17 +440,21 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
         renderDriverSelectors()}
 
       {isLoadingLaps && (
-        <div className="loading-message">
+        <div
+          style={{ textAlign: "center", color: "#666", fontStyle: "italic" }}
+        >
           <p>Loading session lap data...</p>
         </div>
       )}
       {isProcessingChart && !isLoadingLaps && (
-        <div className="loading-message">
+        <div
+          style={{ textAlign: "center", color: "#666", fontStyle: "italic" }}
+        >
           <p>Processing chart data...</p>
         </div>
       )}
       {error && !isLoadingLaps && !isProcessingChart && (
-        <div className="error-message">
+        <div style={{ color: "#d32f2f", textAlign: "center" }}>
           <p>{error}</p>
         </div>
       )}
@@ -454,7 +463,9 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
         !isProcessingChart &&
         !error &&
         (!sessionLapsData || sessionLapsData.length === 0) && (
-          <div className="chart-placeholder">
+          <div
+            style={{ color: "#666", textAlign: "center", fontStyle: "italic" }}
+          >
             <p>No lap data available for this session.</p>
           </div>
         )}
@@ -467,7 +478,9 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
         (!driver1 || !driver2) &&
         allSessionDrivers &&
         allSessionDrivers.length > 0 && (
-          <div className="chart-placeholder">
+          <div
+            style={{ color: "#666", textAlign: "center", fontStyle: "italic" }}
+          >
             <p>
               Lap data loaded. Select two drivers to compare their lap-by-lap
               gap.
@@ -493,7 +506,9 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
         driver1 &&
         driver2 &&
         !chartData && (
-          <div className="chart-placeholder">
+          <div
+            style={{ color: "#666", textAlign: "center", fontStyle: "italic" }}
+          >
             <p>
               Chart will appear here. If not, selected drivers might have no
               common laps or an error occurred during processing.

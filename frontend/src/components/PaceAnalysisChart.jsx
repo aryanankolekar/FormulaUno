@@ -287,7 +287,7 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
       legend: {
         position: "top",
         labels: {
-          color: "#fff",
+          color: "#333",
         },
       },
       title: {
@@ -295,7 +295,7 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
         text: `Lap Times Comparison - ${
           selectedRace.meeting_name || "Selected Race"
         }`,
-        color: "#fff",
+        color: "#181818",
         font: {
           size: 16,
           weight: "bold",
@@ -304,10 +304,10 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
       tooltip: {
         mode: "index",
         intersect: false,
-        backgroundColor: "var(--color-bg-tertiary)",
-        titleColor: "var(--color-text-primary)",
-        bodyColor: "var(--color-text-primary)",
-        borderColor: "var(--color-accent-red)",
+        backgroundColor: "rgba(255, 255, 255, 0.95)",
+        titleColor: "#181818",
+        bodyColor: "#333",
+        borderColor: "#ccc",
         borderWidth: 1,
         padding: 10,
         bodyFont: { size: 12 },
@@ -333,14 +333,17 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
         title: {
           display: true,
           text: "Lap Number",
-          color: "var(--color-text-primary)",
+          color: "#333",
           font: {
             size: 12,
             weight: "bold",
           },
         },
         ticks: {
-          color: "#fff",
+          color: "#555",
+        },
+        grid: {
+          color: "#eee",
         },
       },
       y: {
@@ -348,31 +351,42 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
         title: {
           display: true,
           text: "Lap Time",
-          color: "var(--color-text-primary)",
+          color: "#333",
           font: {
             size: 12,
             weight: "bold",
           },
         },
         ticks: {
-          color: "#fff",
+          color: "#555",
+        },
+        grid: {
+          color: "#eee",
         },
       },
     },
     interaction: { intersect: false, mode: "index" },
-    backgroundColor: "var(--f1-card)",
   };
 
   return (
     <div
       style={{
-        background: "var(--f1-card)",
-        borderRadius: "10px",
-        padding: "1em",
+        padding: "10px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        overflowX: "auto",
       }}
     >
+      <h4
+        style={{ textAlign: "center", color: "#181818", marginBottom: "20px" }}
+      >
+        Pace Analysis: {selectedRace.meeting_name || "Race"}
+      </h4>
       <div className="driver-selection-container">
-        <h4>Select Drivers for Pace Chart (Max {MAX_DRIVERS_ON_CHART}):</h4>
+        <h5 style={{ color: "#333", marginBottom: "15px" }}>
+          Select Drivers for Pace Chart (Max {MAX_DRIVERS_ON_CHART}):
+        </h5>
         {/* Use processedDrivers for UI, which is derived from allSessionDrivers and filtered by lap data */}
         {processedDrivers.map((driver) => (
           <label key={driver.driver_number} className="driver-checkbox-label">
@@ -399,11 +413,13 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
           </label>
         ))}
         {isLoadingLaps && processedDrivers.length > 0 && (
-          <p>Updating lap data...</p>
+          <p style={{ color: "#666", fontStyle: "italic" }}>
+            Updating lap data...
+          </p>
         )}
       </div>
       {error && (!chartData || chartData.datasets.length === 0) && (
-        <p className="error-message">{error}</p>
+        <p style={{ color: "#d32f2f", textAlign: "center" }}>{error}</p>
       )}
       {chartData && chartData.datasets.length > 0 ? (
         <div style={{ height: "450px", width: "100%", marginTop: "20px" }}>
@@ -412,7 +428,9 @@ const PaceAnalysisChart = ({ selectedRace, allSessionDrivers }) => {
       ) : (
         !isLoadingLaps &&
         !error && (
-          <p className="results-placeholder">
+          <p
+            style={{ color: "#666", textAlign: "center", fontStyle: "italic" }}
+          >
             Select drivers to display their pace comparison, or no data for
             current selection.
           </p>

@@ -34,23 +34,23 @@ const baseChartOptions = {
       title: {
         display: true,
         text: "Time (s)", // Standardized X-axis title
-        color: "var(--color-text-secondary)",
+        color: "#333",
       },
-      ticks: { color: "var(--color-text-secondary)" },
-      grid: { color: "var(--color-border)" },
+      ticks: { color: "#555" },
+      grid: { color: "#eee" },
     },
     // Y-axis will be defined per chart
   },
   plugins: {
     legend: {
       position: "top",
-      labels: { color: "var(--color-text-primary)" },
+      labels: { color: "#333" },
       // display: false, // Individual legends might be too much, consider removing if chart titles are clear
     },
     title: {
       // This title is for the chart itself, will be overridden
       display: true,
-      color: "var(--color-text-primary)",
+      color: "#181818",
       font: { size: 14 }, // Slightly smaller for individual charts
     },
   },
@@ -60,32 +60,31 @@ const chartOptions = {
   plugins: {
     legend: {
       labels: {
-        color: "#fff",
+        color: "#333",
       },
     },
     title: {
-      color: "#fff",
+      color: "#181818",
     },
   },
   scales: {
     x: {
       grid: {
-        color: "#fff",
+        color: "#eee",
       },
       ticks: {
-        color: "#fff",
+        color: "#555",
       },
     },
     y: {
       grid: {
-        color: "#fff",
+        color: "#eee",
       },
       ticks: {
-        color: "#fff",
+        color: "#555",
       },
     },
   },
-  backgroundColor: "var(--f1-card)",
 };
 
 // Component accepts allSessionDrivers as a prop
@@ -327,13 +326,13 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
                   title: {
                     display: true,
                     text: yAxisTitle,
-                    color: "var(--color-text-secondary)",
+                    color: "#333",
                   },
                   ticks: {
-                    color: "var(--color-text-secondary)",
+                    color: "#555",
                     ...yAxisOptions.ticks,
                   },
-                  grid: { color: "var(--color-border)" },
+                  grid: { color: "#eee" },
                   min: yAxisOptions.min,
                   max: yAxisOptions.max,
                 },
@@ -348,7 +347,7 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
                   // Keep legend for individual charts, but simplify label
                   position: "top",
                   labels: {
-                    color: "var(--color-text-primary)",
+                    color: "#333",
                     boxWidth: 10, // Smaller legend box
                     font: { size: 10 }, // Smaller font for legend
                   },
@@ -363,42 +362,42 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           {
             key: "speed",
             yAxisLabel: "Speed (km/h)",
-            color: "var(--color-accent-red)",
+            color: "#d32f2f",
             yAxisOptions: {},
             isStepped: false,
           },
           {
             key: "throttle",
             yAxisLabel: "Throttle (%)",
-            color: "green",
+            color: "#2e7d32",
             yAxisOptions: { min: 0, max: 1, ticks: { stepSize: 0.1 } },
             isStepped: false,
           },
           {
             key: "brake",
             yAxisLabel: "Brake (0=Off, 1=On)",
-            color: "blue",
+            color: "#1976d2",
             yAxisOptions: { min: 0, max: 1, ticks: { stepSize: 1 } },
             isStepped: false,
           },
           {
             key: "rpm",
             yAxisLabel: "RPM",
-            color: "var(--color-accent-purple)",
+            color: "#7b1fa2",
             yAxisOptions: {},
             isStepped: false,
           },
           {
             key: "gear",
             yAxisLabel: "Gear",
-            color: "orange",
+            color: "#f57c00",
             yAxisOptions: { min: 0, max: 8, ticks: { stepSize: 1 } },
             isStepped: true,
           },
           {
             key: "drs",
             yAxisLabel: "DRS (0=Off, 1..12=On)",
-            color: "cyan",
+            color: "#00838f",
             yAxisOptions: { min: 0, max: 12, ticks: { stepSize: 1 } },
             isStepped: false,
           },
@@ -540,32 +539,43 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
   return (
     <div
       style={{
-        background: "var(--f1-card)",
-        borderRadius: "10px",
-        padding: "1em",
+        padding: "10px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        overflowX: "auto",
       }}
     >
+      <h4
+        style={{ textAlign: "center", color: "#181818", marginBottom: "20px" }}
+      >
+        Driver Telemetry: {selectedRace.meeting_name || "Race"}
+      </h4>
       <div className="driver-telemetry-chart-container">
-        <h3>
-          Driver Telemetry for Lap: {selectedRace.meeting_name} (
-          {selectedRace.year})
-        </h3>
         {(!allSessionDrivers || allSessionDrivers.length === 0) &&
           !isLoadingLapsList &&
           !isLoadingTelemetry && (
-            <p className="chart-placeholder">
+            <p
+              style={{
+                color: "#666",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
               Driver list not available for this session.
             </p>
           )}
         {allSessionDrivers && allSessionDrivers.length > 0 && renderSelectors()}{" "}
         {/* Changed to renderSelectors */}
         {isLoadingLapsList && (
-          <div className="loading-message">
+          <div
+            style={{ textAlign: "center", color: "#666", fontStyle: "italic" }}
+          >
             <p>Loading laps for driver...</p>
           </div>
         )}
         {lapsError && !isLoadingLapsList && (
-          <div className="error-message">
+          <div style={{ color: "#d32f2f", textAlign: "center" }}>
             <p>{lapsError}</p>
           </div>
         )}
@@ -573,7 +583,13 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           !isLoadingLapsList &&
           driverLaps.length === 0 &&
           !lapsError && (
-            <div className="chart-placeholder">
+            <div
+              style={{
+                color: "#666",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
               <p>No laps found for the selected driver in this session.</p>
             </div>
           )}
@@ -582,22 +598,32 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           !selectedLap &&
           !isLoadingLapsList &&
           !isLoadingTelemetry && (
-            <div className="chart-placeholder">
+            <div
+              style={{
+                color: "#666",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
               <p>Please select a lap to view telemetry.</p>
             </div>
           )}
         {isLoadingTelemetry && (
-          <div className="loading-message">
+          <div
+            style={{ textAlign: "center", color: "#666", fontStyle: "italic" }}
+          >
             <p>Loading telemetry data for lap...</p>
           </div>
         )}
         {isProcessingChart && !isLoadingTelemetry && (
-          <div className="loading-message">
+          <div
+            style={{ textAlign: "center", color: "#666", fontStyle: "italic" }}
+          >
             <p>Processing lap telemetry data...</p>
           </div>
         )}
         {error && !isLoadingTelemetry && !isProcessingChart && (
-          <div className="error-message">
+          <div style={{ color: "#d32f2f", textAlign: "center" }}>
             <p>{error}</p>
           </div>
         )}
@@ -607,7 +633,13 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           selectedDriver &&
           selectedLap &&
           (!telemetryData || telemetryData.length === 0) && (
-            <div className="chart-placeholder">
+            <div
+              style={{
+                color: "#666",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
               <p>
                 No telemetry data points found for the selected driver and lap.
               </p>
@@ -629,7 +661,9 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
                     />
                   ) : (
                     // This case might indicate an issue during processing for a specific chart type
-                    <p>Chart data for {config.title} unavailable.</p>
+                    <p style={{ color: "#666", textAlign: "center" }}>
+                      Chart data for {config.title} unavailable.
+                    </p>
                   )}
                 </div>
               ))}
@@ -641,7 +675,13 @@ function DriverTelemetryChart({ selectedRace, allSessionDrivers }) {
           allSessionDrivers.length > 0 &&
           !isLoadingLapsList &&
           !isLoadingTelemetry && (
-            <div className="chart-placeholder">
+            <div
+              style={{
+                color: "#666",
+                textAlign: "center",
+                fontStyle: "italic",
+              }}
+            >
               <p>Select a driver to load their laps and view telemetry.</p>
             </div>
           )}
