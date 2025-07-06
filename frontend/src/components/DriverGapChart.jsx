@@ -381,8 +381,46 @@ function DriverGapChart({ selectedRace, allSessionDrivers }) {
     },
   };
 
+  const chartOptions = {
+    plugins: {
+      legend: {
+        labels: {
+          color: "#fff",
+        },
+      },
+      title: {
+        color: "#fff",
+      },
+    },
+    scales: {
+      x: {
+        grid: {
+          color: "#fff",
+        },
+        ticks: {
+          color: "#fff",
+        },
+      },
+      y: {
+        grid: {
+          color: "#fff",
+        },
+        ticks: {
+          color: "#fff",
+        },
+      },
+    },
+    backgroundColor: "var(--f1-card)",
+  };
+
   return (
-    <div className="driver-gap-chart-container">
+    <div
+      style={{
+        background: "var(--f1-card)",
+        borderRadius: "10px",
+        padding: "1em",
+      }}
+    >
       <h3>
         Head-to-Head Lap Gap: {selectedRace.meeting_name} ({selectedRace.year})
       </h3>
