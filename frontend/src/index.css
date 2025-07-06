@@ -2,29 +2,41 @@
 
 :root {
   /* Light Theme Colors */
-  --color-bg-primary: #FFFFFF;         /* Main page background: White */
-  --color-bg-secondary: #F0F0F0;       /* App container background: Very Light Grey */
-  --color-bg-tertiary: #FAFAFA;        /* Cards/panels background: Off-White */
+  --color-bg-primary: #ffffff; /* Main page background: White */
+  --color-bg-secondary: #f0f0f0; /* App container background: Very Light Grey */
+  --color-bg-tertiary: #fafafa; /* Cards/panels background: Off-White */
 
-  --color-text-primary: #212121;       /* Primary text: Very Dark Grey/Almost Black */
-  --color-text-secondary: #555555;     /* Secondary text: Dark Grey */
+  --color-text-primary: #212121; /* Primary text: Very Dark Grey/Almost Black */
+  --color-text-secondary: #555555; /* Secondary text: Dark Grey */
 
-  --color-accent-red: #E10600;         /* F1 Red (Keep) */
-  --color-accent-hover-red: #B80500;  /* F1 Red Hover (Keep) */
-  --color-accent-purple: #9B59B6;      /* Purple Accent (Keep for now for e.g. fastest lap) */
+  --color-accent-red: #e10600; /* F1 Red (Keep) */
+  --color-accent-hover-red: #b80500; /* F1 Red Hover (Keep) */
+  --color-accent-purple: #9b59b6; /* Purple Accent (Keep for now for e.g. fastest lap) */
 
-  --color-border: #D0D0D0;             /* Borders, chart grid lines: Medium Grey */
+  --color-border: #d0d0d0; /* Borders, chart grid lines: Medium Grey */
 
-  --color-table-header-bg: #E9E9E9;    /* Table header background: Light Grey */
-  --color-table-row-even-bg: #F8F8F8;  /* Table even row background: Very Light Grey */
-  --color-table-row-hover-bg: #E0E0E0; /* Table row hover: Light Grey Hover */
-  --color-list-item-hover-bg: #E8E8E8; /* List item hover: Light Grey Hover */
+  --color-table-header-bg: #e9e9e9; /* Table header background: Light Grey */
+  --color-table-row-even-bg: #f8f8f8; /* Table even row background: Very Light Grey */
+  --color-table-row-hover-bg: #e0e0e0; /* Table row hover: Light Grey Hover */
+  --color-list-item-hover-bg: #e8e8e8; /* List item hover: Light Grey Hover */
 
-  --font-family-main: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif; /* Keep existing font */
+  --font-family-main: "Roboto", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    "Helvetica Neue", Arial, sans-serif; /* Keep existing font */
 }
 
 /* Basic Reset / Normalize */
-body, h1, h2, h3, h4, p, ul, ol, table, select, button, input {
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+table,
+select,
+button,
+input {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
@@ -68,52 +80,52 @@ h1 {
 }
 
 h2 {
-    color: var(--color-text-primary);
-    border-bottom: 1px solid var(--color-border);
-    padding-bottom: 0.3em;
-    margin-bottom: 0.75em;
-    font-size: 1.6em;
-    font-weight: 500;
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.3em;
+  margin-bottom: 0.75em;
+  font-size: 1.6em;
+  font-weight: 500;
 }
 
 h3 {
-    color: var(--color-text-secondary);
-    font-weight: 500;
-    font-size: 1.3em;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  font-size: 1.3em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
 }
 h4 {
-    color: var(--color-text-primary);
-    font-weight: 500;
-    font-size: 1.1em;
-    margin-top: 1em;
-    margin-bottom: 0.5em;
+  color: var(--color-text-primary);
+  font-weight: 500;
+  font-size: 1.1em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
 }
 
 .race-summary-section .race-results-container > h2,
 .pace-analysis-section > h4, /* General h4 within pace-analysis-section */
 .driver-selection-container > h4 /* Specific h4 for driver selection */ {
-    color: var(--color-accent-red);
-    font-weight: 600;
-    border-bottom: 2px solid var(--color-accent-red);
-    padding-bottom: 0.4em;
-    margin-bottom: 1em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+  color: var(--color-accent-red);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-accent-red);
+  padding-bottom: 0.4em;
+  margin-bottom: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 /* Ensure chart titles within their containers also get this styling if they are h4 */
 .pace-analysis-section > .chart-wrapper > h4,
-.driver-gap-chart-section > .chart-wrapper > h3 { /* DriverGapChart uses h3 */
-    color: var(--color-accent-red);
-    font-weight: 600;
-    border-bottom: 2px solid var(--color-accent-red);
-    padding-bottom: 0.4em;
-    margin-bottom: 1em;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+.driver-gap-chart-section > .chart-wrapper > h3 {
+  /* DriverGapChart uses h3 */
+  color: var(--color-accent-red);
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-accent-red);
+  padding-bottom: 0.4em;
+  margin-bottom: 1em;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
-
 
 label {
   display: block;
@@ -122,7 +134,8 @@ label {
   color: var(--color-text-secondary);
 }
 
-select, input[type="text"] {
+select,
+input[type="text"] {
   width: 100%;
   padding: 10px;
   margin-bottom: 1em;
@@ -138,7 +151,8 @@ select:disabled {
   cursor: not-allowed;
 }
 
-select:focus, input:focus {
+select:focus,
+input:focus {
   outline: none;
   border-color: var(--color-accent-red);
   box-shadow: 0 0 0 2px var(--color-accent-red);
@@ -155,7 +169,8 @@ button {
   font-size: 1em;
   border-radius: 4px;
   cursor: pointer;
-  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out,
+    border-color 0.2s ease-in-out;
   font-weight: 500;
 }
 
@@ -192,7 +207,6 @@ button:disabled {
   width: 80%;
 }
 
-
 hr {
   border: none;
   border-top: 1px solid var(--color-border);
@@ -225,12 +239,12 @@ ul li strong {
 }
 
 ul li em {
-    font-size: 0.9em;
-    color: var(--color-text-secondary);
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
 }
 
 ul li button {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 .selectors-container {
@@ -243,21 +257,22 @@ ul li button {
 
 .race-summary-section,
 .pace-analysis-section, /* Existing styling for these sections */
-.driver-gap-chart-section { /* Add this for consistent styling if used as wrapper */
+.driver-gap-chart-section {
+  /* Add this for consistent styling if used as wrapper */
   margin-bottom: 2em;
   padding: 1.5em;
   background-color: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
-.chart-wrapper { /* Wrapper for individual charts if they are not inside a pre-styled section */
+.chart-wrapper {
+  /* Wrapper for individual charts if they are not inside a pre-styled section */
   margin-bottom: 1.5em;
   padding: 1.5em;
   background-color: var(--color-bg-tertiary);
   border: 1px solid var(--color-border);
   border-radius: 6px;
 }
-
 
 .race-results-container .race-meta-info {
   margin-bottom: 1em;
@@ -274,8 +289,8 @@ ul li button {
   padding: 0.5em 0;
 }
 .race-results-container .weather-info > span {
-    margin-right: 15px;
-    display: inline-block;
+  margin-right: 15px;
+  display: inline-block;
 }
 
 .results-table {
@@ -285,7 +300,8 @@ ul li button {
   font-size: 0.9em;
 }
 
-.results-table th, .results-table td {
+.results-table th,
+.results-table td {
   border: 1px solid var(--color-border);
   border-left: none;
   border-right: none;
@@ -293,11 +309,13 @@ ul li button {
   text-align: left;
   vertical-align: middle;
 }
-.results-table th:first-child, .results-table td:first-child {
-    border-left: 1px solid var(--color-border);
+.results-table th:first-child,
+.results-table td:first-child {
+  border-left: 1px solid var(--color-border);
 }
-.results-table th:last-child, .results-table td:last-child {
-    border-right: 1px solid var(--color-border);
+.results-table th:last-child,
+.results-table td:last-child {
+  border-right: 1px solid var(--color-border);
 }
 
 .results-table th {
@@ -315,12 +333,32 @@ ul li button {
   background-color: var(--color-table-row-hover-bg);
 }
 
-.results-table .col-pos { width: 5%; text-align: center; font-weight: bold; }
-.results-table .col-driver { width: 30%; }
-.results-table .col-team { width: 25%; }
-.results-table .col-laps, .results-table .col-stops { width: 8%; text-align: center; }
-.results-table .col-tyres { width: 12%; text-align: center; font-weight: bold; }
-.results-table .col-interval { width: 12%; font-size: 0.9em; color: var(--color-text-secondary); }
+.results-table .col-pos {
+  width: 5%;
+  text-align: center;
+  font-weight: bold;
+}
+.results-table .col-driver {
+  width: 30%;
+}
+.results-table .col-team {
+  width: 25%;
+}
+.results-table .col-laps,
+.results-table .col-stops {
+  width: 8%;
+  text-align: center;
+}
+.results-table .col-tyres {
+  width: 12%;
+  text-align: center;
+  font-weight: bold;
+}
+.results-table .col-interval {
+  width: 12%;
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+}
 
 .driver-cell {
   display: flex;
@@ -338,9 +376,19 @@ ul li button {
   border: 1px solid var(--color-border);
 }
 
-.driver-name { font-weight: 500; }
-.driver-country { font-size: 0.85em; color: var(--color-text-secondary); margin-left: 5px; }
-.race-winner .col-pos, .race-winner .driver-name { color: var(--color-accent-red); font-weight: bold; }
+.driver-name {
+  font-weight: 500;
+}
+.driver-country {
+  font-size: 0.85em;
+  color: var(--color-text-secondary);
+  margin-left: 5px;
+}
+.race-winner .col-pos,
+.race-winner .driver-name {
+  color: var(--color-accent-red);
+  font-weight: bold;
+}
 
 .fastest-lap {
   margin-top: 1.5em;
@@ -352,38 +400,43 @@ ul li button {
   color: var(--color-accent-purple);
   font-weight: 500;
 }
-.fastest-lap strong { color: var(--color-accent-purple); }
-
-.initial-prompt, p.results-placeholder, p.loading-message {
-    text-align: center;
-    padding: 3em 1em;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary);
-    border-radius: 6px;
-    border: 1px solid var(--color-border);
-}
-.chart-area-prompt { /* Style for the placeholder message in chart area */
-    text-align: center;
-    padding: 2em 1em; /* Less padding than main initial-prompt */
-    font-style: italic;
-    color: var(--color-text-secondary);
-    background-color: transparent; /* No separate background, inherits from charts-display-area if needed */
-    border: 1px dashed var(--color-border); /* Dashed border to indicate it's a placeholder area */
-    border-radius: 4px;
-    margin-top: 1em;
+.fastest-lap strong {
+  color: var(--color-accent-purple);
 }
 
+.initial-prompt,
+p.results-placeholder,
+p.loading-message {
+  text-align: center;
+  padding: 3em 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 6px;
+  border: 1px solid var(--color-border);
+}
+.chart-area-prompt {
+  /* Style for the placeholder message in chart area */
+  text-align: center;
+  padding: 2em 1em; /* Less padding than main initial-prompt */
+  font-style: italic;
+  color: var(--color-text-secondary);
+  background-color: transparent; /* No separate background, inherits from charts-display-area if needed */
+  border: 1px dashed var(--color-border); /* Dashed border to indicate it's a placeholder area */
+  border-radius: 4px;
+  margin-top: 1em;
+}
 
-p.error-message, p[style*="color: red"] {
-    background-color: rgba(225, 6, 0, 0.15);
-    padding: 1em;
-    margin: 1em 0;
-    border-radius: 4px;
-    border: 1px solid var(--color-accent-red);
-    border-left-width: 5px;
-    color: var(--color-accent-red) !important;
-    font-weight: 500;
+p.error-message,
+p[style*="color: red"] {
+  background-color: rgba(225, 6, 0, 0.15);
+  padding: 1em;
+  margin: 1em 0;
+  border-radius: 4px;
+  border: 1px solid var(--color-accent-red);
+  border-left-width: 5px;
+  color: var(--color-accent-red) !important;
+  font-weight: 500;
 }
 
 /* Driver Selection for Pace Chart */
@@ -423,14 +476,13 @@ p.error-message, p[style*="color: red"] {
   accent-color: var(--color-accent-red);
 }
 .driver-checkbox-label input[type="checkbox"]:disabled + span {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .driver-checkbox-label input[type="checkbox"]:checked + span {
   /* Team color is applied inline */
 }
-
 
 a {
   color: var(--color-accent-red);
@@ -442,16 +494,18 @@ a:hover {
 }
 
 /* Styles for DriverGapChart.jsx */
-.driver-gap-chart-container { /* This is the root inside DriverGapChart.jsx */
+.driver-gap-chart-container {
+  /* This is the root inside DriverGapChart.jsx */
   /* padding: 1em; */ /* Padding is now on chart-wrapper or .driver-gap-chart-section */
   /* margin-top: 1.5em; */ /* Margin is now on chart-wrapper or .driver-gap-chart-section */
 }
 
-.driver-gap-chart-container h3 { /* Title within DriverGapChart */
+.driver-gap-chart-container h3 {
+  /* Title within DriverGapChart */
   color: var(--color-text-primary);
   margin-bottom: 0.75em;
   text-align: center;
-   /* Remove specific red accent for this internal title, let chart options handle chart title */
+  /* Remove specific red accent for this internal title, let chart options handle chart title */
   border-bottom: none;
   text-transform: none;
   letter-spacing: normal;
@@ -461,38 +515,46 @@ a:hover {
 .driver-gap-chart-container .loading-message p,
 .driver-gap-chart-container .error-message p,
 .driver-gap-chart-container > .chart-placeholder {
-    text-align: center;
-    padding: 2em 1em;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary);
-    border-radius: 4px;
-    border: 1px solid var(--color-border);
-    margin-top: 1em;
+  text-align: center;
+  padding: 2em 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  margin-top: 1em;
 }
 
 .driver-gap-chart-container .loading-message,
 .driver-gap-chart-container .error-message {
-    text-align: center;
-    padding: 2em 1em;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary);
-    border-radius: 4px;
-    border: 1px solid var(--color-border);
-    margin-top: 1em;
+  text-align: center;
+  padding: 2em 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  margin-top: 1em;
 }
 
 .driver-gap-chart-container .error-message {
-    background-color: rgba(225, 6, 0, 0.1);
-    color: var(--color-accent-red);
-    border-color: var(--color-accent-red);
+  background-color: rgba(225, 6, 0, 0.1);
+  color: var(--color-accent-red);
+  border-color: var(--color-accent-red);
 }
 .driver-gap-chart-container .error-message p {
-    background-color: transparent; border: none; padding: 0; margin:0; color: var(--color-accent-red);
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--color-accent-red);
 }
 .driver-gap-chart-container .loading-message p {
-    background-color: transparent; border: none; padding: 0; margin:0; color: var(--color-text-secondary);
+  background-color: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  color: var(--color-text-secondary);
 }
 
 .driver-gap-chart-area {
@@ -501,8 +563,8 @@ a:hover {
   margin-top: 1em;
 }
 .driver-gap-chart-area canvas {
-    max-height: 100%;
-    max-width: 100%;
+  max-height: 100%;
+  max-width: 100%;
 }
 
 /* Driver Gap Selectors within DriverGapChart.jsx */
@@ -532,8 +594,8 @@ a:hover {
 }
 
 .driver-selector select {
-    width: 100%;
-    margin-bottom: 0;
+  width: 100%;
+  margin-bottom: 0;
 }
 
 /* Chart Controls in App.jsx */
@@ -570,9 +632,10 @@ a:hover {
 }
 
 /* Ensure sections used as wrappers have consistent styling */
-.pace-analysis-section, .driver-gap-chart-section {
+.pace-analysis-section,
+.driver-gap-chart-section {
   /* Styles already defined above, ensure they are suitable for chart display */
-   /* They have padding, background, border, border-radius, margin-bottom */
+  /* They have padding, background, border, border-radius, margin-bottom */
 }
 
 /* Styles for DriverTelemetryChart.jsx */
@@ -621,34 +684,33 @@ a:hover {
 }
 /* New container for telemetry selectors if needed */
 .telemetry-selectors-container {
-    display: flex;
-    gap: 1em; /* Space between driver and lap selector */
-    margin-bottom: 1.5em;
-    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+  display: flex;
+  gap: 1em; /* Space between driver and lap selector */
+  margin-bottom: 1.5em;
+  flex-wrap: wrap; /* Allow wrapping on smaller screens */
 }
 .telemetry-selectors-container .driver-selector,
 .telemetry-selectors-container .lap-selector {
-    flex: 1; /* Each selector takes equal space */
-    min-width: 250px; /* Minimum width before wrapping */
-    padding: 1em;
-    background-color: var(--color-bg-primary);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
+  flex: 1; /* Each selector takes equal space */
+  min-width: 250px; /* Minimum width before wrapping */
+  padding: 1em;
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
 }
 .telemetry-selectors-container .driver-selector label,
 .telemetry-selectors-container .lap-selector label {
-    margin-bottom: 0.5em;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    font-size: 0.9em;
-    display: block; /* Ensure label is above select */
+  margin-bottom: 0.5em;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  font-size: 0.9em;
+  display: block; /* Ensure label is above select */
 }
 .telemetry-selectors-container .driver-selector select,
 .telemetry-selectors-container .lap-selector select {
-    width: 100%;
-    margin-bottom: 0;
+  width: 100%;
+  margin-bottom: 0;
 }
-
 
 .driver-telemetry-chart-container .driver-selector label {
   margin-bottom: 0.5em;
@@ -666,46 +728,47 @@ a:hover {
 .driver-telemetry-chart-container .chart-placeholder p,
 .driver-telemetry-chart-container .loading-message p,
 .driver-telemetry-chart-container .error-message p {
-    text-align: center;
-    padding: 2em 1em;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary); /* This was used in DriverGapChart */
-    border-radius: 4px;
-    border: 1px solid var(--color-border);
-    margin-top: 1em;
+  text-align: center;
+  padding: 2em 1em;
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(
+    --color-bg-tertiary
+  ); /* This was used in DriverGapChart */
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  margin-top: 1em;
 }
 .driver-telemetry-chart-container .loading-message p,
 .driver-telemetry-chart-container .error-message p {
   background-color: transparent;
   border: none;
-  padding:0;
-  margin:0;
+  padding: 0;
+  margin: 0;
 }
-
 
 .driver-telemetry-chart-container .loading-message,
 .driver-telemetry-chart-container .error-message {
-    text-align: center;
-    padding: 2em 1em; /* Main padding on the container div */
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background-color: var(--color-bg-tertiary);
-    border-radius: 4px;
-    border: 1px solid var(--color-border);
-    margin-top: 1em;
+  text-align: center;
+  padding: 2em 1em; /* Main padding on the container div */
+  color: var(--color-text-secondary);
+  font-style: italic;
+  background-color: var(--color-bg-tertiary);
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+  margin-top: 1em;
 }
 
 .driver-telemetry-chart-container .error-message {
-    background-color: rgba(225, 6, 0, 0.1); /* Red tint for error */
-    color: var(--color-accent-red);
-    border-color: var(--color-accent-red);
+  background-color: rgba(225, 6, 0, 0.1); /* Red tint for error */
+  color: var(--color-accent-red);
+  border-color: var(--color-accent-red);
 }
 .driver-telemetry-chart-container .error-message p {
-    color: var(--color-accent-red); /* Ensure p tag inherits color */
+  color: var(--color-accent-red); /* Ensure p tag inherits color */
 }
 .driver-telemetry-chart-container .loading-message p {
-    color: var(--color-text-secondary); /* Ensure p tag inherits color */
+  color: var(--color-text-secondary); /* Ensure p tag inherits color */
 }
 
 /* Styles for the 6-chart telemetry layout */
@@ -744,9 +807,9 @@ a:hover {
 /* .driver-telemetry-chart-area was for the single chart, may not be needed now or should be adapted */
 /* If .driver-telemetry-chart-area is still used as a wrapper *inside* telemetry-chart-item, adjust its height to auto or 100% */
 .driver-telemetry-chart-area {
-    height: 100%; /* Allow it to fill the parent grid item */
-    width: 100%;
-    margin-top: 0; /* Reset margin if it was for the old layout */
+  height: 100%; /* Allow it to fill the parent grid item */
+  width: 100%;
+  margin-top: 0; /* Reset margin if it was for the old layout */
 }
 
 /* Styles for RaceList.jsx Grid and Cards */
@@ -771,7 +834,7 @@ a:hover {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 1em;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Subtle shadow for card effect */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for card effect */
   display: flex;
   flex-direction: column;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -781,7 +844,7 @@ a:hover {
 
 .race-list-item-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .circuit-layout-image {
@@ -790,7 +853,9 @@ a:hover {
   aspect-ratio: 16/10; /* Common aspect ratio for track maps, adjust as needed */
   object-fit: contain; /* Or 'cover', depending on desired look and image consistency */
   margin-bottom: 1em;
-  background-color: var(--color-bg-secondary); /* Placeholder background if image is transparent or loading */
+  background-color: var(
+    --color-bg-secondary
+  ); /* Placeholder background if image is transparent or loading */
   border-radius: 4px;
 }
 
@@ -812,7 +877,8 @@ a:hover {
   margin-bottom: 1em; /* Space before the button */
 }
 
-.race-card-details h4 { /* Targets .race-card-name */
+.race-card-details h4 {
+  /* Targets .race-card-name */
   font-size: 1.1em;
   color: var(--color-accent-red); /* Use accent for the race name */
   margin-top: 0;
@@ -825,10 +891,10 @@ a:hover {
   margin-bottom: 0.3em;
   line-height: 1.4;
 }
-.race-card-details .race-card-circuit strong { /* If circuit short name is bolded */
-    color: var(--color-text-primary);
+.race-card-details .race-card-circuit strong {
+  /* If circuit short name is bolded */
+  color: var(--color-text-primary);
 }
-
 
 .race-card-button {
   /* Uses global button styles, but can add specifics */
@@ -838,13 +904,15 @@ a:hover {
 }
 
 /* Responsive adjustments for the grid */
-@media (max-width: 992px) { /* Medium screens - 2 columns */
+@media (max-width: 992px) {
+  /* Medium screens - 2 columns */
   .race-list-grid-container {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 600px) { /* Small screens - 1 column */
+@media (max-width: 600px) {
+  /* Small screens - 1 column */
   .race-list-grid-container {
     grid-template-columns: 1fr;
   }
@@ -867,8 +935,8 @@ a:hover {
 }
 
 .driver-country-flag {
-  width: 20px;   /* Matches w20 from flagcdn URL */
-  height: auto;  /* Maintain aspect ratio, or set fixed e.g., 13px */
+  width: 20px; /* Matches w20 from flagcdn URL */
+  height: auto; /* Maintain aspect ratio, or set fixed e.g., 13px */
   /* border: 1px solid var(--color-border); */ /* Optional: border for flags */
   object-fit: contain; /* Ensure flag is not distorted */
   flex-shrink: 0; /* Prevent flag from shrinking */
@@ -885,53 +953,52 @@ a:hover {
 /* Ensure these are specific enough or use !important if needed */
 
 /* .driver-info-wrapper { */
-  /* border: 2px solid orange !important; */ /* See the wrapper bounds */
-  /* padding: 2px !important; */
-  /* min-height: 20px; */ /* Ensure wrapper has some height */
+/* border: 2px solid orange !important; */ /* See the wrapper bounds */
+/* padding: 2px !important; */
+/* min-height: 20px; */ /* Ensure wrapper has some height */
 /* } */
 
 /* .team-color-strip { */
-  /* display: inline-block !important; */
-  /* width: 10px !important; */ /* Wider for visibility */
-  /* height: 16px !important; */
-  /* border: 2px solid lime !important; */
-  /* background-color: magenta !important; */ /* Override inline style for test */
-  /* color: black !important; */ /* For fallback text TC */
-  /* font-size: 8px !important; */ /* For fallback text TC */
-  /* text-align: center !important; */ /* For fallback text TC */
+/* display: inline-block !important; */
+/* width: 10px !important; */ /* Wider for visibility */
+/* height: 16px !important; */
+/* border: 2px solid lime !important; */
+/* background-color: magenta !important; */ /* Override inline style for test */
+/* color: black !important; */ /* For fallback text TC */
+/* font-size: 8px !important; */ /* For fallback text TC */
+/* text-align: center !important; */ /* For fallback text TC */
 /* } */
 
 /* .driver-country-flag { */
-  /* display: inline-block !important; */
-  /* width: 20px !important; */ /* Original intended width */
-  /* height: 15px !important; */ /* Fixed height for test */
-  /* border: 2px solid cyan !important; */
-  /* background-color: yellow !important; */ /* Fallback if src fails or for placeholder */
-  /* color: black !important; */ /* For alt text if image is broken */
-  /* font-size: 8px !important; */ /* For alt text */
-  /* overflow: hidden !important; */ /* Prevent alt text from making it huge */
+/* display: inline-block !important; */
+/* width: 20px !important; */ /* Original intended width */
+/* height: 15px !important; */ /* Fixed height for test */
+/* border: 2px solid cyan !important; */
+/* background-color: yellow !important; */ /* Fallback if src fails or for placeholder */
+/* color: black !important; */ /* For alt text if image is broken */
+/* font-size: 8px !important; */ /* For alt text */
+/* overflow: hidden !important; */ /* Prevent alt text from making it huge */
 /* } */
 /* == DIAGNOSTIC STYLES - END == */
 
 /* == DIAGNOSTIC STYLES - TABLE CELLS - START == */
 /* .results-table .col-driver { */
-  /* border-left: 3px dotted red !important; */
-  /* border-right: 3px dotted red !important; */
-  /* background-color: rgba(255,0,0,0.05) !important; */ /* Optional faint bg */
+/* border-left: 3px dotted red !important; */
+/* border-right: 3px dotted red !important; */
+/* background-color: rgba(255,0,0,0.05) !important; */ /* Optional faint bg */
 /* } */
 
 /* .results-table .col-team { */
-  /* border-left: 3px dotted green !important; */
-  /* border-right: 3px dotted green !important; */
-  /* background-color: rgba(0,255,0,0.05) !important; */ /* Optional faint bg */
+/* border-left: 3px dotted green !important; */
+/* border-right: 3px dotted green !important; */
+/* background-color: rgba(0,255,0,0.05) !important; */ /* Optional faint bg */
 /* } */
 
 /* Add overflow hidden to see if content is breaking bounds */
 /* .results-table .col-driver, */
 /* .results-table .col-driver .driver-info-wrapper, */
 /* .results-table .col-driver .driver-name { */
-    /* overflow: hidden !important; */
-    /* text-overflow: ellipsis !important; */
+/* overflow: hidden !important; */
+/* text-overflow: ellipsis !important; */
 /* } */
 /* == DIAGNOSTIC STYLES - TABLE CELLS - END == */
-[end of frontend/src/index.css]
